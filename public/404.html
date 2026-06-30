@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en" class="dark-mode">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="File not found — 404" />
+  <title>404 — File Not Found</title>
+  <style>
+    :root {
+      --bg: #0a0e14;
+      --fg: #16c60c;
+      --cyan: #00d9ff;
+      --red: #ff4f4f;
+      --gray: #888;
+      --dim: #444;
+      --prompt-user: #ff8c00;
+      --prompt-host: #00d9ff;
+      --prompt-symbol: #16c60c;
+      --font-mono: 'Fira Code', 'JetBrains Mono', 'Consolas', monospace;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: var(--bg);
+      color: var(--fg);
+      font-family: var(--font-mono);
+      font-size: 14px;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .terminal {
+      width: 100%;
+      max-width: 600px;
+      padding: 2rem;
+    }
+    .prompt {
+      color: var(--prompt-user);
+    }
+    .prompt .host {
+      color: var(--prompt-host);
+    }
+    .prompt .symbol {
+      color: var(--prompt-symbol);
+    }
+    .output-line {
+      margin: 0.5rem 0;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .error {
+      color: var(--red);
+    }
+    a {
+      color: var(--cyan);
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+    @media (max-width: 640px) {
+      body {
+        font-size: 12px;
+      }
+      .terminal {
+        padding: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="terminal">
+    <div class="output-line">
+      <span class="prompt"><span class="prompt-user">guest</span><span class="prompt-host">@404</span><span class="prompt-symbol">→</span></span> cat /this-page
+    </div>
+    <div class="output-line error">No such file or directory: /this-page</div>
+    <div class="output-line">
+      <span class="prompt"><span class="prompt-user">guest</span><span class="prompt-host">@404</span><span class="prompt-symbol">→</span></span> <a href="/">← Go home</a>
+    </div>
+  </div>
+</body>
+</html>

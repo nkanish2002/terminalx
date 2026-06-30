@@ -1,0 +1,30 @@
+{
+  "name": "terminalfs",
+  "version": "0.1.0",
+  "description": "Terminal-style static-site framework - interactive terminal powered by Markdown",
+  "type": "module",
+  "main": "bin/terminalfs.js",
+  "bin": {
+    "terminalfs": "./bin/terminalfs.js"
+  },
+  "scripts": {
+    "dev": "node bin/terminalfs.js dev",
+    "build": "node bin/terminalfs.js build",
+    "new": "node bin/terminalfs.js new",
+    "clean": "rm -rf dist"
+  },
+  "keywords": ["terminal", "static-site", "markdown", "framework"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "gray-matter": "^4.0.3",
+    "jiti": "^2.4.2",
+    "markdown-it": "^14.1.0",
+    "markdown-it-task-lists": "^2.1.1",
+    "prismjs": "^1.29.0",
+    "chokidar": "^4.0.3"
+  },
+  "devDependencies": {
+    "sirv-cli": "^3.0.1"
+  }
+}

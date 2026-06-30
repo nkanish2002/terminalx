@@ -1,0 +1,81 @@
+/**
+ * Shell/Prism Terminal Theme — Maps Prism token classes to terminal palette variables.
+ * 
+ * Color mapping:
+ *   - .token.keyword → --yellow
+ *   - .token.string → --cyan
+ *   - .token.comment → --white (50% opacity)
+ *   - .token.function → --green
+ *   - .token.number → --purple
+ *   - .token.operator → --red
+ *   - .token.punctuation → --white
+ *   - .token.builtin → --cyan
+ */
+
+/* Keywords */
+.token.keyword, .token.control {
+  color: var(--yellow);
+}
+
+/* Strings */
+.token.string, .token.char, .token.property, .token.attr-value {
+  color: var(--cyan);
+}
+
+/* Comments */
+.token.comment, .token.prolog, .token.doctype, .token.cdata {
+  color: var(--white);
+  opacity: 0.6;
+  font-style: italic;
+}
+
+/* Functions */
+.token.function, .token.method, .token.class-name {
+  color: var(--green);
+}
+
+/* Numbers */
+.token.number, .token.constant, .token.symbol {
+  color: var(--purple);
+}
+
+/* Operators */
+.token.operator, .token.punctuation, .token.boolean {
+  color: var(--red);
+}
+
+/* Built-ins */
+.token.boolean, .token.builtin, .token.property, .token.tag {
+  color: var(--cyan);
+}
+
+/* Tags */
+.token.tag, .token.selector, .token.attr-name {
+  color: var(--green);
+}
+
+/* Variables */
+.token.variable, .token.regex {
+  color: var(--yellow);
+}
+
+/* Atoms */
+.token.atrule, .token.entity {
+  color: var(--purple);
+}
+
+/* Important (overrides) */
+.token.important {
+  font-weight: bold;
+  color: var(--red);
+}
+
+/* Italic */
+.token.italic {
+  font-style: italic;
+}
+
+/* Bold */
+.token.bold {
+  font-weight: bold;
+}
