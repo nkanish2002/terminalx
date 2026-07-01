@@ -168,8 +168,7 @@ function copyRecursive(src, dest) {
     const stat = statSync(srcPath);
     if (stat.isDirectory()) {
       copyRecursive(srcPath, destPath);
-    } else if (entry !== 'README.md') {
-      // Skip README files
+    } else {
       copyFileSync(srcPath, destPath);
     }
   }
