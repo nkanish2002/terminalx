@@ -91,28 +91,38 @@ async function build() {
       JSON.stringify({ content: contentMap }, null, 2)
     );
   } else {
-    // Generate per-file content
+    // Generate per-file content (strip leading slash to avoid double-slash paths)
     const contentOutDir = resolve(outDir, 'content');
     if (!existsSync(contentOutDir)) {
       mkdirSync(contentOutDir, { recursive: true });
     }
     
     for (const [path, data] of Object.entries(contentMap)) {
-      const outPath = resolve(contentOutDir, `${path}.json`);
+      const safePath = path.replace(/^\/+/, '');
+      const outPath = resolve(contentOutDir, safePath + '.json');
       mkdirSync(resolve(outPath, '..'), { recursive: true });
       writeFileSync(outPath, JSON.stringify(data, null, 2));
     }
   }
   
-  // Generate search-index.json
+  // Generate search-index.json (use stripped HTML for readable snippets)
   const searchIndex = files
     .filter(f => f.ext === '.md')
     .map(f => {
       const content = contentMap[f.path];
+      const html = content?.html || '';
+      // Strip HTML tags, replacing with spaces to preserve word boundaries
+      const text = html
+        .replace(/<[^>]*>/g, ' ')
+        .replace(/&nbsp;/g, ' ')
+        .replace(/[\u200b-\u200f\u2028-\u202f\ufeff]/g, '')
+        .replace(/\s+/g, ' ')
+        .replace(/[ \t]+/g, ' ')
+        .trim();
       return {
         path: f.path,
         title: content?.title || f.title,
-        text: content?.raw || '',
+        text: text,
       };
     });
   
@@ -158,8 +168,8 @@ function copyRecursive(src, dest) {
     const stat = statSync(srcPath);
     if (stat.isDirectory()) {
       copyRecursive(srcPath, destPath);
-    } else if (entry !== 'README.md') {
-      // Skip README files
+    } else {
+      // Copy all files including README.md (inert bug — no README exists in shell/ dir)
       copyFileSync(srcPath, destPath);
     }
   }

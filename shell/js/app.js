@@ -252,15 +252,16 @@ async function cmdCat(args) {
       return;
     }
     
-    // Lazy fetch
+    // Lazy fetch per-file content (skip double-slash paths)
+    const fetchPath = target.replace(/^\/+/, '');
     addOutputLine('Loading...', 'info');
     try {
-      const res = await fetch(`./content/${target}.json`);
-      if (!res.ok) throw new Error(`Failed to load: ${res.status}`);
+      const res = await fetch('./content/' + fetchPath + '.json');
+      if (!res.ok) throw new Error('Failed to load: ' + res.status);
       content = await res.json();
       contentCache[target] = content;
     } catch (err) {
-      addOutputLine(`Error: ${err.message}`, 'error');
+      addOutputLine('Error: ' + err.message, 'error');
       return;
     }
   }

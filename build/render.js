@@ -142,7 +142,7 @@ function convertGraphTokens(html) {
  * Extract first H1 heading from markdown content.
  */
 function extractH1(content) {
-  const match = content.match(/^#\\s+(.+)$/m);
+  const match = content.match(/^#\s+(.+)$/m);
   return match ? match[1].trim() : null;
 }
 
