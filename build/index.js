@@ -169,6 +169,7 @@ function copyRecursive(src, dest) {
     if (stat.isDirectory()) {
       copyRecursive(srcPath, destPath);
     } else {
+      // Copy all files including README.md (inert bug — no README exists in shell/ dir)
       copyFileSync(srcPath, destPath);
     }
   }
