@@ -134,7 +134,7 @@ export async function renderMarkdown(rawContent, title) {
  */
 function convertGraphTokens(html) {
   return html.replace(/@@GRAPH:([^@]+)@@/g, (match, id) => {
-    return `<canvas data-graph-id="${id}" width="100%" height="200"></canvas>`;
+    return `<canvas class="graph-canvas" data-graph-id="${id}"></canvas>`;
   });
 }
 
