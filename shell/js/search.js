@@ -49,9 +49,9 @@ function buildSnippet(text, query) {
   const tokens = tokenize(query);
   const textLower = text.toLowerCase();
   
-  // Find the first matching position
-  let bestPos = textLower.indexOf(tokens[0]);
-  for (const token of tokens.slice(1)) {
+  // Find earliest matching position across all tokens
+  let bestPos = -1;
+  for (const token of tokens) {
     const pos = textLower.indexOf(token);
     if (pos >= 0 && (bestPos < 0 || pos < bestPos)) {
       bestPos = pos;
@@ -104,7 +104,7 @@ export async function cmdSearch(args) {
     if (!res.ok) throw new Error('Failed to load search index');
     searchIndex = await res.json();
   } catch (err) {
-    addOutputLine(`Error: ${err.message}`, 'error');
+    addOutputLine('Error: ' + err.message, 'error');
     return;
   }
   
@@ -119,29 +119,32 @@ export async function cmdSearch(args) {
     return;
   }
   
-  addOutputLine(`Found ${results.length} result(s) for "<span style="color:var(--cyan)">${escapeHtml(query)}</span>":`);
+  addOutputLine('Found ' + results.length + ' result(s) for "' +
+    '<span style="color:var(--cyan)">' + escapeHtml(query) + '</span>' + '":');
   
   for (const { item, score } of results) {
     const snippet = buildSnippet(item.text, query);
-    // Make clickable — clicking runs "cat <path>"
     const line = document.createElement('div');
     line.className = 'output-line search-result';
-    line.innerHTML = `<span style="color:var(--cyan);cursor:pointer" data-path="${escapeHtml(item.path)}">${escapeHtml(item.title)}</span> <span style="color:var(--gray)">(${item.path})</span>`;
-    line.appendChild(document.createElement('br'));
-    line.innerHTML += `<span style="color:var(--dim)">${snippet}</span>`;
     
-    // Click to navigate
-    line.querySelector('[data-path]').addEventListener('click', (e) => {
+    const titleLine = document.createElement('span');
+    titleLine.innerHTML = '<span style="color:var(--cyan);cursor:pointer" data-path="' + escapeHtml(item.path) + '">' + escapeHtml(item.title) + '</span>' +
+      ' <span style="color:var(--dim);cursor:pointer">(' + item.path + ')</span>';
+    line.appendChild(titleLine);
+    line.appendChild(document.createElement('br'));
+    line.innerHTML += '<span style="color:var(--dim)">' + snippet + '</span>';
+    
+    // Click title to navigate
+    titleLine.querySelector('[data-path]').addEventListener('click', (e) => {
       e.stopPropagation();
-      executeCommand(`cat ${item.path}`);
+      executeCommand('cat ' + item.path);
     });
     
-    // Also make the path clickable
-    const pathSpan = line.querySelector('span:last-of-type');
+    // Click path to navigate
+    const pathSpan = titleLine.querySelector('span:last-of-type');
     if (pathSpan) {
-      pathSpan.style.cursor = 'pointer';
       pathSpan.addEventListener('click', () => {
-        executeCommand(`cat ${item.path}`);
+        executeCommand('cat ' + item.path);
       });
     }
     

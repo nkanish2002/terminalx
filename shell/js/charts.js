@@ -52,7 +52,14 @@ export async function initGraphs(graphs) {
         renderGraphs(graphs);
       };
       script.onerror = () => {
-        addOutputLine('Error: Failed to load Chart.js', 'error');
+        // Avoid ReferenceError if addOutputLine not available yet
+        if (typeof addOutputLine === 'function') {
+          addOutputLine('Error: Failed to load Chart.js', 'error');
+        }
+        // Clean up failed script tag to prevent accumulation
+        if (script.parentNode) {
+          script.parentNode.removeChild(script);
+        }
       };
       document.head.appendChild(script);
     }
