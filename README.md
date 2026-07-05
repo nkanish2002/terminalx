@@ -1,4 +1,4 @@
-# TerminalFS — A Terminal-Style Static-Site **Framework**
+# TerminalX — A Terminal-Style Static-Site **Framework**
 
 ## Goal
 
@@ -12,9 +12,9 @@ Build a **reusable framework** — think *Docusaurus, but the site is an interac
 ## Quick Start
 
 ```bash
-terminalfs new my-site
+terminalx new my-site
 cd my-site
-terminalfs dev
+terminalx dev
 ```
 
 ## Features

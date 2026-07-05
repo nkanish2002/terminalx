@@ -1,6 +1,6 @@
 # Terminal UI Design
 
-How we built the interactive terminal experience in TerminalFS.
+How we built the interactive terminal experience in TerminalX.
 
 ## Architecture
 

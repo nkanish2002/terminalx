@@ -16,13 +16,13 @@ let contentCache = {};
 let currentDir = '/';
 let commandHistory = [];
 let historyIndex = -1;
-let currentTheme = localStorage.getItem('terminalfs-theme') || 'dark';
+let currentTheme = localStorage.getItem('terminalx-theme') || 'dark';
 const commands = {};
 
 // ── Theme ─────────────────────────────────────────────────────────────────
 function toggleTheme() {
   currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
-  localStorage.setItem('terminalfs-theme', currentTheme);
+  localStorage.setItem('terminalx-theme', currentTheme);
   
   if (currentTheme === 'light') {
     document.documentElement.classList.add('light-mode');

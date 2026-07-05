@@ -1,5 +1,5 @@
 /**
- * bin/scaffold.js — Scaffold a new TerminalFS site.
+ * bin/scaffold.js — Scaffold a new TerminalX site.
  * 
  * Creates: content/, terminal.config.ts, public/, .gitignore
  */
@@ -8,7 +8,7 @@ import { mkdirSync, writeFileSync, existsSync } from 'fs';
 import { resolve } from 'path';
 
 function scaffold(newDir) {
-  console.log(`Scaffolding new TerminalFS site in: ${newDir}`);
+  console.log(`Scaffolding new TerminalX site in: ${newDir}`);
   
   // Create directories
   mkdirSync(resolve(newDir, 'content'), { recursive: true });
@@ -19,12 +19,12 @@ function scaffold(newDir) {
 // Single source of truth for terminal appearance and behavior
 // All fields optional — missing fields use documented defaults
 
-import { defineConfig } from 'terminalfs';
+import { defineConfig } from 'terminalx';
 
 export default defineConfig({
   // Site identity
   site: {
-    title: 'My TerminalFS Site',
+    title: 'My TerminalX Site',
     user: 'user',
     host: 'localhost',
     promptSymbol: '→',
@@ -86,26 +86,26 @@ export default defineConfig({
   writeFileSync(resolve(newDir, 'terminal.config.ts'), configContent);
   
   // Create example content
-  const readmeContent = `# Welcome to TerminalFS
+  const readmeContent = `# Welcome to TerminalX
 
 A terminal-style static-site framework. Interactive, type-a-command experience powered by Markdown.
 
 ## Getting Started
 
-Edit this file, run \`terminalfs dev\`, and see your changes live.
+Edit this file, run \`terminalx dev\`, and see your changes live.
 
 ## Features
 
 - Terminal shell with \`ls\`, \`cat\`, \`cd\`, \`tree\`, \`help\`, \`search\`
 - Markdown content in real .md files
 - Configurable via single \`terminal.config.ts\`
-- Graphs via \` \`\`\`graph \`\`\` \` code fences
+- Graphs via \`\`\`graph\`\`\` code fences
 - Search with static JSON index
 - Deep linking via hash routes
 
 ---
 
-*Built with TerminalFS framework*
+*Built with TerminalX framework*
 `;
   mkdirSync(resolve(newDir, 'content', 'docs'), { recursive: true });
   writeFileSync(resolve(newDir, 'content', 'docs', 'readme.md'), readmeContent);
@@ -120,15 +120,15 @@ dist/
   
   // Create package.json
   const packageContent = {
-    name: 'my-terminalfs-site',
+    name: 'my-terminalx-site',
     version: '0.1.0',
     private: true,
     scripts: {
-      dev: 'terminalfs dev',
-      build: 'terminalfs build',
+      dev: 'terminalx dev',
+      build: 'terminalx build',
     },
     devDependencies: {
-      terminalfs: '*',
+      terminalx: '*',
     },
   };
   writeFileSync(
@@ -137,7 +137,7 @@ dist/
   );
   
   // Create README
-  const readmeFile = `# My TerminalFS Site
+  const readmeFile = `# My TerminalX Site
 
 ## Quick Start
 

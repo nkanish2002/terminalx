@@ -1,4 +1,4 @@
-# TerminalFS — A Terminal-Style Static-Site **Framework**
+# TerminalX — A Terminal-Style Static-Site **Framework**
 
 ## Goal
 Build a **reusable framework** — think *Docusaurus, but the site is an interactive terminal* — that anyone can install, point at their own Markdown, configure via one file, and deploy as a static site. The deliverable is the **engine**, not any one site: the prototype's content (portfolio, blog, `trooteye@…`) is only a bundled **starter/example site** to develop and demo against.

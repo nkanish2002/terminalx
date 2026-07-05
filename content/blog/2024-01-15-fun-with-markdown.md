@@ -1,6 +1,6 @@
 # Fun with Markdown
 
-A post about Markdown features and how TerminalFS renders them.
+A post about Markdown features and how TerminalX renders them.
 
 ## Headers
 
@@ -31,7 +31,7 @@ echo "Hello, world!"
 
 ```json
 {
-  "name": "terminalfs",
+  "name": "terminalx",
   "version": "0.1.0"
 }
 ```
@@ -51,7 +51,7 @@ echo "Hello, world!"
 
 ## Links
 
-[TerminalFS](https://github.com/trooteye/terminal-site)
+[TerminalX](https://github.com/trooteye/terminalx)
 
 ## Emoji
 
