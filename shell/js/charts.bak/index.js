@@ -1,5 +1,5 @@
 /**
- * shell/js/charts/index.js — Chart.js integration for TerminalFS.
+ * shell/js/charts.bak/index.js — Chart.js integration for TerminalX.
  * 
  * Provides graph rendering functionality with sample data.
  */

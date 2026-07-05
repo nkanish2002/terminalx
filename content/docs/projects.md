@@ -8,7 +8,7 @@ CLI portfolio tracking with DCA, holdings CSV, sector allocation.
 
 Web dashboard for server management, process monitoring, log viewing.
 
-## TerminalFS
+## TerminalX
 
 This framework — terminal-style static site engine.
 
