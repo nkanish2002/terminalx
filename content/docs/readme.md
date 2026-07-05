@@ -14,7 +14,7 @@ A terminal-style static-site **framework** — think *Docusaurus*, but the site 
 ## Quick Start
 
 ```bash
-terminalfs new my-site
+terminalx new my-site
 cd my-site
 terminalfs dev
 ```

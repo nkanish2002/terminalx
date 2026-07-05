@@ -1,20 +1,20 @@
-# AGENT.md — TerminalFS
+# AGENT.md — TerminalX
 
 ## Project Identity
 
-**TerminalFS** is a reusable static-site framework that produces interactive terminal-style SPAs from Markdown content. Think "Docusaurus, but the site is a terminal you type commands into."
+**TerminalX** is a reusable static-site framework that produces interactive terminal-style SPAs from Markdown content. Think "Docusaurus, but the site is a terminal you type commands into."
 
 - **This is a framework, not a finished site.** The content under `content/` is a bundled starter/example for development and demo purposes only.
-- **Distribution model:** published as an npm package (`terminalfs`). Consumers run `terminalfs new my-site`, add Markdown, and build.
+- **Distribution model:** published as an npm package (`terminalx`). Consumers run `terminalx new my-site`, add Markdown, and build.
 - **Hard rule:** `build/` and `shell/` must never hardcode content paths, prompt text, colors, or titles. All user-facing values come from `terminal.config.ts`.
 
 ## Repository Structure
 
 ```
-terminal-site/
+terminalx/
 ├── bin/                    # CLI entry points (framework)
-│   ├── terminalfs.js       #  CLI: build | dev | new <dir>
-│   └── scaffold.js         #  terminalfs new template generator
+│   ├── terminalx.js        #  CLI: build | dev | new <dir>
+│   └── scaffold.js         #  terminalx new template generator
 ├── build/                  # Content pipeline modules (framework)
 │   ├── index.js            #  Orchestrator: wires steps, emits outputs
 │   ├── config.js           #  Load terminal.config.ts via jiti, validate, merge defaults
@@ -59,7 +59,7 @@ terminal-site/
 `terminal.config.ts` is the **single source of truth** for all user-customizable values:
 
 ```ts
-import { defineConfig } from 'terminalfs';
+import { defineConfig } from 'terminalx';
 
 export default defineConfig({
   site: { title, user, host, promptSymbol },
@@ -139,13 +139,13 @@ The SPA (`shell/index.html` + `shell/js/`) runs entirely client-side after build
 npm install
 
 # Dev mode (watch + rebuild)
-npm run dev        # or: node bin/terminalfs.js dev
+npm run dev        # or: node bin/terminalx.js dev
 
 # Production build
-npm run build      # or: node bin/terminalfs.js build
+npm run build      # or: node bin/terminalx.js build
 
 # Scaffold a new site
-node bin/terminalfs.js new <directory>
+node bin/terminalx.js new <directory>
 
 # Clean
 npm run clean      # rm -rf dist/
@@ -181,7 +181,7 @@ When making changes, verify:
 
 - **Graph rendering fails:** Ensure `graph.js` sentinel tokens are properly swapped in `render.js` post-render. The HTML must contain `<canvas data-graph-id="...">` elements.
 - **Build dev mode missing server:** `build/dev.js` watches and rebuilds but does not serve. Use `npx sirv dist` or `python -m http.server` separately.
-- **Config not loading:** `jiti` needs the site directory as its working context. The `SITE_DIR` env var is passed by `bin/terminalfs.js`.
+- **Config not loading:** `jiti` needs the site directory as its working context. The `SITE_DIR` env var is passed by `bin/terminalx.js`.
 - **Theme variables not applied:** `theme.css` must load **before** `terminal.css` in `index.html`. Check the `<link>` order.
 - **Prism languages missing:** `render.js` scans for languages per-file and loads components dynamically. If a language isn't in `LANG_REGISTRY`, it falls back to escaped plaintext.
 - **Content not found on cat:** Check that `walk.js` paths match what `cat` resolves. Paths are normalized to `/prefix/file.md` format with no double slashes.

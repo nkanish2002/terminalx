@@ -1,5 +1,5 @@
 /**
- * TerminalFS Framework Public API
+ * TerminalX Framework Public API
  * 
  * Export defineConfig() and Config type for consumer type-checking.
  * Runtime: no-op identity helper with type annotations.

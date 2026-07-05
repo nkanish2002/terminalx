@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * TerminalFS CLI
+ * TerminalX CLI
  * 
  * Commands:
  *   build  - Build site to dist/
@@ -23,14 +23,14 @@ const args = process.argv.slice(3);
 
 if (!command) {
   console.log(`
-TerminalFS v0.1.0 - Interactive Terminal Static Site Framework
+TerminalX v0.1.0 - Interactive Terminal Static Site Framework
 
-Usage: terminalfs <command>
+Usage: terminalx <command>
 
 Commands:
   build     Build site to dist/
   dev       Watch mode with live reload (localhost:3000)
-  new <dir> Scaffold new TerminalFS site
+  new <dir> Scaffold new TerminalX site
   help      Show this help
 `);
   process.exit(0);
@@ -58,7 +58,7 @@ switch (command) {
 
   case 'new':
     if (!args[0]) {
-      console.error('Usage: terminalfs new <directory>');
+      console.error('Usage: terminalx new <directory>');
       process.exit(1);
     }
     const newDir = resolve(process.cwd(), args[0]);
@@ -70,14 +70,14 @@ switch (command) {
 
   case 'help':
     console.log(`
-TerminalFS v0.1.0
+TerminalX v0.1.0
 
-Usage: terminalfs <command>
+Usage: terminalx <command>
 
 Commands:
   build     Build site to dist/
   dev       Watch mode with live reload
-  new <dir> Scaffold new TerminalFS site
+  new <dir> Scaffold new TerminalX site
   help      Show this help
 `);
     break;

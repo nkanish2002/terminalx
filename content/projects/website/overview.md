@@ -12,12 +12,12 @@ A personal website with blog, projects, and terminal interface.
 ## Development
 
 ```bash
-terminalfs dev
+terminalx dev
 ```
 
 ## Deployment
 
 ```bash
-terminalfs build
+terminalx build
 # Upload dist/ to GitHub Pages
 ```

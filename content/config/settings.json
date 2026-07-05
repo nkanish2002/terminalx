@@ -1,6 +1,6 @@
 {
   "version": "0.1.0",
-  "framework": "terminalfs",
+  "framework": "terminalx",
   "lastUpdated": "2026-06-29",
   "settings": {
     "theme": "terminal-dark",

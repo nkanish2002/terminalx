@@ -7,7 +7,7 @@ import { defineConfig } from './index.js';
 export default defineConfig({
   // Site identity
   site: {
-    title: 'TerminalFS',
+    title: 'TerminalX',
     user: 'user',
     host: 'terminal',
     promptSymbol: '→',

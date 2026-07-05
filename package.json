@@ -1,16 +1,16 @@
 {
-  "name": "terminalfs",
+  "name": "terminalx",
   "version": "0.1.0",
   "description": "Terminal-style static-site framework - interactive terminal powered by Markdown",
   "type": "module",
-  "main": "bin/terminalfs.js",
+  "main": "bin/terminalx.js",
   "bin": {
-    "terminalfs": "./bin/terminalfs.js"
+    "terminalx": "./bin/terminalx.js"
   },
   "scripts": {
-    "dev": "node bin/terminalfs.js dev",
-    "build": "node bin/terminalfs.js build",
-    "new": "node bin/terminalfs.js new",
+    "dev": "node bin/terminalx.js dev",
+    "build": "node bin/terminalx.js build",
+    "new": "node bin/terminalx.js new",
     "clean": "rm -rf dist"
   },
   "keywords": ["terminal", "static-site", "markdown", "framework"],
