@@ -1,4 +1,4 @@
-# About TerminalFS
+# About TerminalX
 
 A terminal-style static-site framework. Interactive, type-a-command experience powered by Markdown.
 

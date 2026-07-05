@@ -8,13 +8,13 @@
 ## Install
 
 ```bash
-npm i -D terminalfs
+npm i -D terminalx
 ```
 
 ## Create Site
 
 ```bash
-npx terminalfs new my-site
+npx terminalx new my-site
 cd my-site
 ```
 
@@ -33,13 +33,13 @@ export default defineConfig({
 ## Build & Deploy
 
 ```bash
-terminalfs build
+terminalx build
 # Deploy dist/ to GitHub Pages, Netlify, etc.
 ```
 
 ## Development
 
 ```bash
-terminalfs dev
+terminalx dev
 # Watch content/, rebuild on change, serve
 ```

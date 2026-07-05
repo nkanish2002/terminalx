@@ -1,4 +1,4 @@
-# Welcome to TerminalFS
+# Welcome to TerminalX
 
 A terminal-style static-site **framework** — think *Docusaurus*, but the site is an interactive terminal.
 
@@ -16,7 +16,7 @@ A terminal-style static-site **framework** — think *Docusaurus*, but the site 
 ```bash
 terminalx new my-site
 cd my-site
-terminalfs dev
+terminalx dev
 ```
 
 ## Example
@@ -25,4 +25,4 @@ Type `help` for available commands, `tree` to see file structure.
 
 ---
 
-*Built with TerminalFS framework*
+*Built with TerminalX framework*
