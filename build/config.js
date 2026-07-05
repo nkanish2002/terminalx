@@ -19,7 +19,7 @@ const __dirname = dirname(__filename);
 /** Default configuration values */
 export const DEFAULTS = {
   site: {
-    title: 'TerminalFS',
+    title: 'TerminalX',
     user: 'user',
     host: 'host',
     promptSymbol: '→',

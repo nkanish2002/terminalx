@@ -17,7 +17,7 @@ Like Docusaurus: the consumer brings **content + config**, the framework supplie
 |---|---|---|---|
 | `build/` (pipeline) | **Framework** | ✅ yes | Generic; never references specific content. |
 | `shell/` (terminal SPA) | **Framework** | ✅ yes | Generic chrome + command engine; reads `manifest.json`. |
-| `bin/` (CLI) | **Framework** | ✅ yes | `terminalfs build` / `dev` / `new`. |
+| `bin/` (CLI) | **Framework** | ✅ yes | `terminalx build` / `dev` / `new`. |
 | `content/` | **User** | ❌ per-site | The user's Markdown — their actual site. |
 | `terminal.config.ts` | **User** | ❌ per-site | The one knob file (branding, theme, prompt, commands). |
 | `public/` | **User** | ❌ per-site | Favicon, robots, custom static assets. |
@@ -25,9 +25,9 @@ Like Docusaurus: the consumer brings **content + config**, the framework supplie
 **Hard rule:** nothing in `build/` or `shell/` may hardcode content, paths, prompt text, colors, or titles — those come only from `content/` and `terminal.config.ts`. If the engine needs a value, it reads it from config (with a default). This is what makes it a framework and not "my site."
 
 ### Distribution model (Docusaurus-style)
-- **Package:** publish the engine (`build/`, `shell/`, `bin/`) as an npm package (e.g. `terminalfs`). Consumers `npm i -D terminalfs`.
-- **Scaffold:** `terminalfs new my-site` (a "create" command) drops a minimal `content/`, `terminal.config.ts`, and `public/` into the user's repo — *not* the demo content.
-- **Use:** `terminalfs build` → `dist/`; `terminalfs dev` → watch + serve.
+- **Package:** publish the engine (`build/`, `shell/`, `bin/`) as an npm package (e.g. `terminalx`). Consumers `npm i -D terminalx`.
+- **Scaffold:** `terminalx new my-site` (a "create" command) drops a minimal `content/`, `terminal.config.ts`, and `public/` into the user's repo — *not* the demo content.
+- **Use:** `terminalx build` → `dist/`; `terminalx dev` → watch + serve.
 - **This repo** keeps the bundled **starter/example site** under `content/` purely for engine development and the live demo — it ships as the `new` template's optional example, never as the framework's "real" content.
 
 ---
@@ -59,11 +59,11 @@ Like Docusaurus: the consumer brings **content + config**, the framework supplie
 
 ```
 terminal-site/                # (this repo = engine + bundled starter/example site)
-├── package.json              # exposes `terminalfs` bin; engine deps
+├── package.json              # exposes `terminalx` bin; engine deps
 │
-│  ## ───── FRAMEWORK (engine — reusable, publishable as `terminalfs`) ─────
+│  ## ───── FRAMEWORK (engine — reusable, publishable as `terminalx`) ─────
 ├── bin/
-│   └── terminalfs.js         # CLI: `build` | `dev` | `new` (scaffold)
+│   └── terminalx.js         # CLI: `build` | `dev` | `new` (scaffold)
 ├── build/                    # Content pipeline (one responsibility per module)
 │   ├── index.js              # Orchestrator: wires the steps, writes outputs
 │   ├── config.js             # Load + validate terminal.config.ts, merge defaults
@@ -126,7 +126,7 @@ The shell always loads `manifest.json` at startup, then branches on `manifest.in
   "generatedAt": "2026-06-29T00:00:00Z",
   "inlined": true,                 // true => content is in fs.json; false => fetch content/<path>.json
   "config": {                      // runtime (behavior) slice of terminal.config.ts — see "Configuration"
-    "title": "TerminalFS",
+    "title": "TerminalX",
     "prompt": { "user": "trooteye", "host": "terminal", "symbol": "→" },
     "landing": "cat /docs/readme.md",
     "home": "/",
@@ -137,7 +137,7 @@ The shell always loads `manifest.json` at startup, then branches on `manifest.in
   "tree": {
     "/":              { "type": "dir",  "children": ["docs", "projects", "blog", "config"] },
     "/docs":          { "type": "dir",  "children": ["readme.md", "about.md", ...] },
-    "/docs/readme.md":{ "type": "file", "title": "Welcome to TerminalFS", "ext": "md", "size": 1234 },
+    "/docs/readme.md":{ "type": "file", "title": "Welcome to TerminalX", "ext": "md", "size": 1234 },
     "/config/settings.json": { "type": "file", "title": "settings.json", "ext": "json", "size": 98 }
   }
 }
@@ -177,10 +177,10 @@ The framework exports a typed `defineConfig()` helper (no-op at runtime, pure DX
 
 ```ts
 // terminal.config.ts  — every field optional; defaults shown
-import { defineConfig } from "terminalfs";
+import { defineConfig } from "terminalx";
 
 export default defineConfig({
-  site:    { title: "TerminalFS", user: "trooteye", host: "terminal", promptSymbol: "→" },
+  site:    { title: "TerminalX", user: "trooteye", host: "terminal", promptSymbol: "→" },
   theme:   { bg: "#0a0e14", surface: "#111820", border: "#1e2a3a",
              green: "#00ff9c", cyan: "#56b6c2", yellow: "#f0db4f",
              red: "#e06c75", purple: "#c678dd", white: "#abb2bf",
@@ -248,8 +248,8 @@ Split into focused modules so no single file owns everything (`build/index.js` o
 ### Phase 0 — Scaffold (~45 min)
 - [ ] `npm init -y`; add deps: `markdown-it`, `markdown-it-task-lists`, `prismjs`, `gray-matter`, `chokidar`, `jiti` (load `terminal.config.ts` without a compile step); dev: a static server (`sirv-cli` or `serve`).
 - [ ] Export the framework's public API from the package entry: `defineConfig()` (typed identity helper) + the `Config` type, so consumers' `terminal.config.ts` gets autocomplete.
-- [ ] `bin/terminalfs.js` (the framework CLI) with subcommands `build`, `dev` (watch `content/` + `shell/`, rebuild, serve `dist/`), `new <dir>` (scaffold a fresh user site: minimal `content/` + `terminal.config.ts` + `public/`). Wire `"bin": { "terminalfs": "bin/terminalfs.js" }` in `package.json`.
-- [ ] npm scripts delegate to the CLI: `build` → `terminalfs build`, `dev` → `terminalfs dev`, `clean`.
+- [ ] `bin/terminalx.js` (the framework CLI) with subcommands `build`, `dev` (watch `content/` + `shell/`, rebuild, serve `dist/`), `new <dir>` (scaffold a fresh user site: minimal `content/` + `terminal.config.ts` + `public/`). Wire `"bin": { "terminalx": "bin/terminalx.js" }` in `package.json`.
+- [ ] npm scripts delegate to the CLI: `build` → `terminalx build`, `dev` → `terminalx dev`, `clean`.
 - [ ] Create `content/`, `shell/`, `public/`, `.gitignore` (ignore `dist/`, `node_modules/`).
 - [ ] **Framework discipline:** establish the rule that `build/` and `shell/` contain *zero* site-specific values (no content paths, prompt text, colors, titles). Add a check (lint/grep in CI or a build assertion) that flags hardcoded values that belong in `terminal.config.ts`.
 - [ ] Create `terminal.config.ts` (the config interface) with the documented default values; keep it commented as the user-facing edit point.
@@ -257,7 +257,7 @@ Split into focused modules so no single file owns everything (`build/index.js` o
 - [ ] Decide repo deploy target (project page `/terminal-site/` vs user page) — sets `build.basePath`; assets stay relative either way.
 
 ### Phase 1 — Content Pipeline (~2–3 h)
-- [ ] Migrate prototype's inline `FS` strings into real files under `content/` as the **bundled starter/example site** (docs, projects, blog, config) — preserving paths so existing command behavior matches. This doubles as the `terminalfs new` example template; the engine must not depend on any of it.
+- [ ] Migrate prototype's inline `FS` strings into real files under `content/` as the **bundled starter/example site** (docs, projects, blog, config) — preserving paths so existing command behavior matches. This doubles as the `terminalx new` example template; the engine must not depend on any of it.
 - [ ] `walk.js`: recursive walk of `config.content.dir` building the `tree` map (dir/file nodes, per-file `size`, same shape the shell expects).
 - [ ] `build/theme.js`: generate `dist/css/theme.css` (`:root { --bg: …; --green: …; --font-size: … }`) from `config.theme`, so `terminal.css`/`prism-terminal.css` reference variables only.
 - [ ] `render.js`: configure `markdown-it` — `default` preset (CommonMark + GFM tables + strikethrough), `linkify: true`, and `.use(taskLists)`; keep output classes/markup compatible with `terminal.css`. Parse frontmatter with `gray-matter`; derive `title` (frontmatter → first `# H1` → filename fallback).
@@ -310,7 +310,7 @@ Split into focused modules so no single file owns everything (`build/index.js` o
 - [ ] Responsive: font scaling, horizontal overflow for tables/wide output on mobile.
 - [ ] Confirm all asset references are **relative** so the `/terminal-site/` base path works.
 - [ ] Lighthouse pass; defer/lazy Chart.js; ensure `fs.json` is reasonably sized (split per-file fetch only if it grows large).
-- [ ] **Framework acceptance test:** `terminalfs new /tmp/test-site` → add one trivial `.md` + near-empty `terminal.config.ts` → `terminalfs build` → confirm a working terminal with *none* of the example content. Proves the engine is content-independent.
+- [ ] **Framework acceptance test:** `terminalx new /tmp/test-site` → add one trivial `.md` + near-empty `terminal.config.ts` → `terminalx build` → confirm a working terminal with *none* of the example content. Proves the engine is content-independent.
 - [ ] README: document install, `new`/`build`/`dev`, and the full `terminal.config.ts` reference.
 
 **Estimated total:** ~11–15 h.
@@ -321,7 +321,7 @@ Split into focused modules so no single file owns everything (`build/index.js` o
 
 | Prototype (single HTML file) | This (reusable framework) |
 |------------------------------|----------------------------|
-| One bespoke site | **Engine + many sites** — `terminalfs new`, bring your own content |
+| One bespoke site | **Engine + many sites** — `terminalx new`, bring your own content |
 | Content hardcoded in JS `FS` | Real `.md` files in the user's `content/` |
 | Branding baked into code | One `terminal.config.ts` (prompt, theme, commands, landing) |
 | Fragile regex markdown parser | markdown-it (tables, frontmatter, code highlight) |

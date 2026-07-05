@@ -25,7 +25,7 @@ function generateGraphDocs() {
   return `
 <div class="graph-docs">
   <h3>Graph Commands</h3>
-  <p>The TerminalFS supports various graph types for data visualization:</p>
+  <p>The TerminalX supports various graph types for data visualization:</p>
   
   <h4>Available Chart Types</h4>
   <ul>

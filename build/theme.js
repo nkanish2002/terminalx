@@ -16,7 +16,7 @@ import { join } from 'path';
 function generateThemeCSS(themeConfig) {
   const t = themeConfig;
   
-  return `/* TerminalFS Theme — Generated from terminal.config.ts */
+  return `/* TerminalX Theme — Generated from terminal.config.ts */
 :root {
   /* Background & surfaces */
   --bg: ${t.bg || '#0a0e14'};
