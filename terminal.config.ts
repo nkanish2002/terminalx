@@ -8,7 +8,7 @@ export default defineConfig({
   // Site identity
   site: {
     title: 'TerminalX',
-    user: 'trooteye',
+    user: 'user',
     host: 'terminal',
     promptSymbol: '→',
   },
