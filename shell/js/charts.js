@@ -54,7 +54,11 @@ async function ensureChartJs() {
  */
 export async function initGraphs(graphs) {
   if (!graphs || graphs.length === 0) return;
-  pendingGraphs.push(...graphs);
+
+  // Clone to avoid Proxy/spread issues from JSON.parse
+  const safeGraphs = JSON.parse(JSON.stringify(graphs));
+  pendingGraphs.push(...safeGraphs);
+
   await ensureChartJs();
   renderAll();
 }
