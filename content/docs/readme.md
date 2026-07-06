@@ -23,6 +23,23 @@ terminalx dev
 
 Type `help` for available commands, `tree` to see file structure.
 
+### Demo
+
+```graph
+{
+  "type": "bar",
+  "title": "TerminalX Performance",
+  "labels": ["Build", "Bundle", "Render", "Search"],
+  "datasets": [{
+    "label": "Score",
+    "data": [95, 92, 88, 85],
+    "backgroundColor": "rgba(100, 255, 218, 0.6)",
+    "borderColor": "rgba(100, 255, 218, 1)",
+    "borderWidth": 1
+  }]
+}
+```
+
 ---
 
 *Built with TerminalX framework*

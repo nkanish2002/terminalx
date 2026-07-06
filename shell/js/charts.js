@@ -8,6 +8,7 @@
  */
 
 let chartJsReady = false;
+let chartJsLoading = false;
 const pendingGraphs = [];
 
 /**
@@ -22,13 +23,27 @@ async function ensureChartJs() {
     return;
   }
 
-  chartJsReady = true; // prevent double-load
+  // Deduplicate: if already loading, wait for it instead of creating a second script
+  if (chartJsLoading) {
+    while (typeof Chart === 'undefined') {
+      await new Promise((r) => setTimeout(r, 50));
+    }
+    return;
+  }
+  chartJsLoading = true;
 
   const script = document.createElement('script');
   script.src = 'https://cdn.jsdelivr.net/npm/chart.js@4';
   await new Promise((resolve, reject) => {
-    script.onload = resolve;
-    script.onerror = () => reject(new Error('Failed to load Chart.js'));
+    script.onload = () => {
+      chartJsReady = true;
+      chartJsLoading = false;
+      resolve();
+    };
+    script.onerror = () => {
+      chartJsLoading = false;
+      reject(new Error('Failed to load Chart.js'));
+    };
     document.head.appendChild(script);
   });
 }
@@ -39,7 +54,11 @@ async function ensureChartJs() {
  */
 export async function initGraphs(graphs) {
   if (!graphs || graphs.length === 0) return;
-  pendingGraphs.push(...graphs);
+
+  // Clone to avoid Proxy/spread issues from JSON.parse
+  const safeGraphs = JSON.parse(JSON.stringify(graphs));
+  pendingGraphs.push(...safeGraphs);
+
   await ensureChartJs();
   renderAll();
 }
@@ -54,6 +73,12 @@ function renderAll() {
   for (const graph of graphs) {
     const canvas = document.querySelector(`[data-graph-id="${graph.id}"]`);
     if (!canvas) continue;
+
+    // Re-queue if Chart.js hasn't finished loading yet
+    if (typeof Chart === 'undefined') {
+      pendingGraphs.push(graph);
+      continue;
+    }
 
     try {
       const ctx = canvas.getContext('2d');

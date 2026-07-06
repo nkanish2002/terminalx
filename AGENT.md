@@ -177,9 +177,21 @@ When making changes, verify:
 - [ ] Tab completion works for commands and paths
 - [ ] Theme toggle (dark/light) persists
 
+## Changelog / Resolved Issues
+
+### 2026-07-06 — Chart.js race + config import fixes
+- **Chart.js double-load race** (`shell/js/charts.js`): `chartJsReady = true` was set before the CDN script finished loading, causing `initGraphs()` calls during the load window to skip `ensureChartJs()` and render with `Chart` undefined — graphs failed silently. Fixed by adding a `chartJsLoading` dedup flag; `ensureChartJs()` now waits for in-flight loads, and `renderAll()` re-queues graphs if `Chart` is still undefined.
+- **Config import resolution** (`terminal.config.ts`): bare specifier `from 'terminalx'` couldn't be resolved by jiti, so the user's overrides silently fell back to defaults. Changed to `from './index.js'`.
+- **Proxy/spread issue**: `JSON.parse(JSON.stringify(graphs))` clone guard added to `initGraphs()` to avoid spreading Proxy objects from `fs.json`.
+
+### 2026-07-06 — Chart rendering test suite
+- Added `test/charts.test.js`: 67 tests covering the full chart pipeline (build extraction → HTML canvas → data structure → canvas-graph pairing → bundled output → source module exports). Run with `node test/charts.test.js`.
+
+---
+
 ## Common Pitfalls
 
-- **Graph rendering fails:** Ensure `graph.js` sentinel tokens are properly swapped in `render.js` post-render. The HTML must contain `<canvas data-graph-id="...">` elements.
+- **Graph rendering fails:** Ensure `graph.js` sentinel tokens are properly swapped in `render.js` post-render. The HTML must contain `<canvas data-graph-id="...">` elements. The `initGraphs()` call in `app.js` must `await` before `cmdCat` finishes, and `charts.js` deduplicates Chart.js loads via a `chartJsLoading` flag to prevent double-load races. Graph configs from `fs.json` are cloned via `JSON.parse(JSON.stringify())` before spreading to avoid Proxy issues.
 - **Build dev mode missing server:** `build/dev.js` watches and rebuilds but does not serve. Use `npx sirv dist` or `python -m http.server` separately.
 - **Config not loading:** `jiti` needs the site directory as its working context. The `SITE_DIR` env var is passed by `bin/terminalx.js`.
 - **Theme variables not applied:** `theme.css` must load **before** `terminal.css` in `index.html`. Check the `<link>` order.
