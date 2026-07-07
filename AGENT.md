@@ -125,12 +125,14 @@ export default defineConfig({
 The SPA (`shell/index.html` + `shell/js/`) runs entirely client-side after build:
 
 - **Startup:** fetch `manifest.json` → config + tree; if `inlined: true`, fetch `fs.json` to seed content cache
-- **Commands:** `ls`, `cat`, `cd`, `pwd`, `tree`, `clear`, `help`, `whoami`, `date`, `search` — gated by `config.commands.enabled`
-- **cat flow:** resolve path → check cache → if not inlined, `fetch` per-file JSON → inject `html` → init graphs if present
-- **Routing:** hash-based (`#/cat/docs/readme.md`). On load with no hash → run `config.content.landing` command
+- **Commands:** `ls`, `open`, `cd`, `pwd`, `tree`, `clear`, `help`, `whoami`, `date`, `search` — gated by `config.commands.enabled`
+- **`open` flow:** resolve path → check cache → if not inlined, `fetch` per-file JSON → open scrollable modal overlay with file content → init graphs if present
+- **Modal:** `#open-overlay` is a fixed-position overlay with its own scrollable body. Desktop: 720px centered island. Mobile: full-screen. Close via ESC, backdrop tap, or titlebar buttons.
+- **Routing:** hash-based (`#/open/docs/readme.md`). On load with no hash → run `config.content.landing` command
 - **Tab completion:** commands + file paths from tree
 - **History:** ↑/↓ arrows
 - **Theme toggle:** dark/light via `localStorage` + CSS class swap
+- **`cat`**: kept as an alias to `open` for backward compatibility
 
 ## Development Workflow
 
@@ -170,14 +172,26 @@ When making changes, verify:
 - [ ] `npm run build` completes without errors
 - [ ] `dist/manifest.json` is valid JSON with expected structure
 - [ ] Open `dist/index.html` in a browser — terminal loads, prompt renders
-- [ ] `ls` shows directory tree, `cd` navigates, `cat` renders Markdown
-- [ ] `search <query>` returns results with snippets
-- [ ] Hash routing: `#/cat/docs/readme.md` loads content directly
-- [ ] Graph rendering: `cat /projects/portfolio/overview.md` shows charts
+- [ ] `ls` shows directory tree, `cd` navigates, `open` renders Markdown in modal
+- [ ] `search <query>` returns results with snippets, clicking results opens files
+- [ ] Hash routing: `#/open/docs/readme.md` loads content directly in modal
+- [ ] Graph rendering: `open /projects/portfolio/overview.md` shows charts in modal
+- [ ] Modal closes on ESC, backdrop click, or titlebar buttons
 - [ ] Tab completion works for commands and paths
 - [ ] Theme toggle (dark/light) persists
 
 ## Changelog / Resolved Issues
+
+### 2026-07-07 — cat → open modal viewer
+- **`cat` output was unscrollable** (`shell/js/app.js`, `shell/css/terminal.css`): Content dumped into `#output` could not scroll on mobile due to `overflow: hidden` on `html`/`body`. Replaced `cat` with `open` command that shows a centered scrollable modal overlay. Desktop: 720px island with backdrop blur. Mobile: full-screen overlay. `cat` kept as alias.
+- **`ls` silently changed directory** (`shell/js/app.js`): `ls /some/dir` changed `currentDir` as a side effect. Removed — only `cd` changes directory now.
+- **`search` results opened with stale `cat`** (`shell/js/search.js`): Click handlers called `executeCommand('cat ' + path)` but `cat` was replaced with `open`. Updated to use `open`.
+- **Desktop click-to-focus fired inside modal** (`shell/js/app.js`): Global click handler focused the input even when the open modal was visible, interfering with backdrop close. Added `!openModalActive` guard.
+- **`executeCommand` didn't await async commands**: `cmdOpen` is async but dispatch was fire-and-forget. Wrapped in async IIFE with proper await.
+- **Duplicate `window.*` assignments in `init()`**: Global state was set twice. Removed the duplicate block.
+- **Duplicate ESC keydown listeners**: Two separate listeners on `input` and `document`. Consolidated into one global handler.
+- **`Chart.instances` deprecated in Chart.js 4** (`shell/js/charts.js`, `shell/js/app.js`): Manual `activeCharts` array tracks chart instances for cleanup. `closeFileModal()` destroys tracked charts.
+- **`terminal.config.ts` landing updated**: Changed from `cat /docs/readme.md` to `open /docs/readme.md`.
 
 ### 2026-07-07 — Graph rendering reference bug + mobile scroll fix
 - **Graph rendering silently failed** (`shell/js/charts.js`): In `renderAll()`, `const graphs = pendingGraphs` was a reference assignment, not a copy. The next line `pendingGraphs.length = 0` emptied both arrays simultaneously, so the `for...of` loop iterated over an empty array — graphs were never rendered. Fixed by replacing with `pendingGraphs.splice(0)` which returns a copy and clears the original atomically.
@@ -196,10 +210,10 @@ When making changes, verify:
 
 ## Common Pitfalls
 
-- **Graph rendering fails:** Ensure `graph.js` sentinel tokens are properly swapped in `render.js` post-render. The HTML must contain `<canvas data-graph-id="...">` elements. The `initGraphs()` call in `app.js` must `await` before `cmdCat` finishes, and `charts.js` deduplicates Chart.js loads via a `chartJsLoading` flag to prevent double-load races. Graph configs from `fs.json` are cloned via `JSON.parse(JSON.stringify())` before spreading to avoid Proxy issues. **Critical:** `renderAll()` must use `pendingGraphs.splice(0)` (not `pendingGraphs` + `length = 0`) to avoid the reference-emptying bug.
-- **Mobile scroll fails:** The click-to-focus handler in `app.js` must not intercept touch-scroll gestures. Use `touchstart`/`touchmove` listeners to detect scroll intent (>5px movement) and skip input focus when scrolling. Set `touch-action: pan-y` on `#output` for explicit vertical scroll on mobile.
+- **Graph rendering fails:** Ensure `graph.js` sentinel tokens are properly swapped in `render.js` post-render. The HTML must contain `<canvas data-graph-id="...">` elements. The `initGraphs()` call in `app.js` must be awaited (commands are dispatched through async IIFE in `executeCommand`), and `charts.js` deduplicates Chart.js loads via a `chartJsLoading` flag to prevent double-load races. Graph configs from `fs.json` are cloned via `JSON.parse(JSON.stringify())` before spreading to avoid Proxy issues. **Critical:** `renderAll()` must use `pendingGraphs.splice(0)` (not `pendingGraphs` + `length = 0`) to avoid the reference-emptying bug. Chart instances are tracked in `window.activeCharts` for manual cleanup — `Chart.instances` is deprecated in Chart.js 4.
+- **Mobile scroll fails:** The click-to-focus handler in `app.js` must not activate on touch devices outside the input line. On desktop, the handler must check `!openModalActive` to avoid interfering with the open modal. Set `touch-action: pan-y` on `#output` for explicit vertical scroll on mobile. The `open` modal has its own scrollable body separate from the terminal output.
 - **Build dev mode missing server:** `build/dev.js` watches and rebuilds but does not serve. Use `npx sirv dist` or `python -m http.server` separately.
 - **Config not loading:** `jiti` needs the site directory as its working context. The `SITE_DIR` env var is passed by `bin/terminalx.js`.
 - **Theme variables not applied:** `theme.css` must load **before** `terminal.css` in `index.html`. Check the `<link>` order.
 - **Prism languages missing:** `render.js` scans for languages per-file and loads components dynamically. If a language isn't in `LANG_REGISTRY`, it falls back to escaped plaintext.
-- **Content not found on cat:** Check that `walk.js` paths match what `cat` resolves. Paths are normalized to `/prefix/file.md` format with no double slashes.
+- **Content not found on open:** Check that `walk.js` paths match what `open` resolves. Paths are normalized to `/prefix/file.md` format with no double slashes. Note: `ls` no longer changes `currentDir` — use `cd` to navigate, then `open` files.

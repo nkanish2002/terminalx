@@ -3,8 +3,7 @@
  *
  * Lazy-loads Chart.js from CDN on first graph render,
  * then creates Chart instances for every canvas in the DOM.
- * Properly awaits Chart.js load before rendering so cmdCat
- * doesn't finish before charts are drawn.
+ * Charts are tracked in window.activeCharts for manual cleanup.
  */
 
 let chartJsReady = false;
@@ -97,6 +96,11 @@ function renderAll() {
       }
 
       new Chart(ctx, config);
+
+      // Track chart for manual cleanup (Chart.instances deprecated in v4)
+      if (window.activeCharts) {
+        window.activeCharts.push(chart);
+      }
     } catch (e) {
       console.error('Failed to render graph', graph.id, ':', e);
     }

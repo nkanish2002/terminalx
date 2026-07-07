@@ -1,7 +1,7 @@
 /**
  * shell/js/router.js — Hash-route deep-linking.
  * 
- * Parses hash routes like #/cat/docs/readme.md and runs commands.
+ * Parses hash routes like #/open/docs/readme.md and runs commands.
  * Handles initial load, hashchange, and "no hash" default landing.
  */
 

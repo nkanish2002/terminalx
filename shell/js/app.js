@@ -19,6 +19,7 @@ let historyIndex = -1;
 let currentTheme = localStorage.getItem('terminalx-theme') || 'dark';
 const commands = {};
 let openModalActive = false;
+const activeCharts = [];
 
 // ── Theme ─────────────────────────────────────────────────────────────────
 function toggleTheme() {
@@ -75,23 +76,18 @@ async function init() {
     // Initialize commands (built-in + imported modules)
     initCommands();
     
-    // Expose executeCommand globally for external use (BEFORE router runs)
+    // Expose globals for router and external use
     window.executeCommand = executeCommand;
     window.manifest = manifest;
     window.commands = commands;
     window.currentDir = currentDir;
     window.addOutputLine = addOutputLine;
     window.escapeHtml = escapeHtml;
+    window.activeCharts = activeCharts;
     
     // Initialize router (handles initial hash + hashchange + landing)
     initRouter();
     setRouterReady();
-    
-    // Expose executeCommand globally for external use
-    window.executeCommand = executeCommand;
-    window.manifest = manifest;
-    window.commands = commands;
-    window.currentDir = currentDir;
     
   } catch (err) {
     console.error('Initialization error:', err);
@@ -157,19 +153,22 @@ function executeCommand(input) {
   const cmdName = parts[0].toLowerCase();
   const args = parts.slice(1);
   
-  // Execute
-  if (commands[cmdName]) {
-    try {
-      commands[cmdName](args);
-    } catch (err) {
-      addOutputLine(`Error: ${err.message}`, 'error');
+  // Execute (async-safe)
+  (async () => {
+    if (commands[cmdName]) {
+      try {
+        const result = commands[cmdName](args);
+        if (result && typeof result.then === 'function') {
+          await result;
+        }
+      } catch (err) {
+        addOutputLine(`Error: ${err.message}`, 'error');
+      }
+    } else {
+      addOutputLine(`command not found: ${cmdName}`, 'error');
     }
-  } else {
-    addOutputLine(`command not found: ${cmdName}`, 'error');
-  }
-  
-  // Update hash for deep linking
-  updateHash(cmdName, args);
+    updateHash(cmdName, args);
+  })();
 }
 
 // ── Output & Prompt ───────────────────────────────────────────────────────
@@ -203,10 +202,6 @@ async function cmdLs(args) {
   }
   
   if (node.type === 'dir') {
-    currentDir = target;
-    const titlebarEl = document.getElementById('titlebar-path');
-    if (titlebarEl) titlebarEl.textContent = target;
-    
     if (target !== '/') {
       addOutputLine('..');
     }
@@ -278,7 +273,7 @@ function openFileModal(target, node, content) {
   const body = overlay.querySelector('.open-body');
 
   // Close any existing charts to avoid duplicates
-  closeFileModal(true);
+  destroyCharts();
 
   // Title bar
   const fileName = target.split('/').pop();
@@ -319,11 +314,16 @@ function openFileModal(target, node, content) {
   }
 }
 
-function closeFileModal(silent = false) {
-  // Destroy any existing Chart instances
-  if (typeof Chart !== 'undefined' && Chart.instances) {
-    Object.values(Chart.instances).forEach(chart => chart.destroy());
-  }
+function destroyCharts() {
+  // Track charts manually since Chart.instances is deprecated in Chart.js 4
+  activeCharts.forEach(chart => {
+    try { chart.destroy(); } catch (e) { /* ignore */ }
+  });
+  activeCharts.length = 0;
+}
+
+function closeFileModal() {
+  destroyCharts();
 
   const overlay = document.getElementById('open-overlay');
   overlay.classList.add('hidden');
@@ -507,9 +507,10 @@ document.addEventListener('DOMContentLoaded', () => {
   // On touch devices, only tap the input line to focus — global click
   // handler interferes with scroll gestures and triggers the keyboard.
   // On desktop, clicking anywhere focuses the input for convenience.
+  // Never focus input when the open modal is visible.
   if (!('ontouchstart' in window) && navigator.maxTouchPoints === 0) {
     document.addEventListener('click', (e) => {
-      if (e.target.id !== 'cmd-input') {
+      if (e.target.id !== 'cmd-input' && !openModalActive) {
         input.focus();
       }
     });
@@ -522,21 +523,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ESC key closes the open modal (and refocuses input)
-  input.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
-      if (openModalActive) {
-        closeFileModal();
-        e.preventDefault();
-        e.stopPropagation();
-      }
-    }
-  });
-
-  // Also listen globally for ESC in case input isn't focused
+  // Global ESC key closes the open modal
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && openModalActive) {
       closeFileModal();
+      e.preventDefault();
+      e.stopPropagation();
     }
   });
 

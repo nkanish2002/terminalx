@@ -2,7 +2,7 @@
  * shell/js/search.js — Client-side search command.
  * 
  * Loads search-index.json, scores results, renders with snippets and highlighting.
- * Clicking a result navigates to #/cat/<path>.
+ * Clicking a result navigates to #/open/<path>.
  */
 
 const SNIPPET_CHARS = 160;
@@ -137,14 +137,14 @@ export async function cmdSearch(args) {
     // Click title to navigate
     titleLine.querySelector('[data-path]').addEventListener('click', (e) => {
       e.stopPropagation();
-      executeCommand('cat ' + item.path);
+      executeCommand('open ' + item.path);
     });
     
     // Click path to navigate
     const pathSpan = titleLine.querySelector('span:last-of-type');
     if (pathSpan) {
       pathSpan.addEventListener('click', () => {
-        executeCommand('cat ' + item.path);
+        executeCommand('open ' + item.path);
       });
     }
     
