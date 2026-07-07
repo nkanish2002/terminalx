@@ -179,6 +179,11 @@ When making changes, verify:
 
 ## Changelog / Resolved Issues
 
+### 2026-07-07 — Graph rendering reference bug + mobile scroll fix
+- **Graph rendering silently failed** (`shell/js/charts.js`): In `renderAll()`, `const graphs = pendingGraphs` was a reference assignment, not a copy. The next line `pendingGraphs.length = 0` emptied both arrays simultaneously, so the `for...of` loop iterated over an empty array — graphs were never rendered. Fixed by replacing with `pendingGraphs.splice(0)` which returns a copy and clears the original atomically.
+- **Mobile scroll blocked by keyboard** (`shell/js/app.js`): The global click-to-focus handler triggered on every tap outside the input, including touch-scroll gestures on `#output`. After a scroll, the subsequent click event opened the mobile keyboard, preventing further scrolling. Fixed with `touchstart`/`touchmove` listeners that track scroll intent (>5px movement); the click handler now skips focusing the input when a scroll is detected.
+- **Mobile viewport height mismatch** (`shell/css/terminal.css`): `html` used `height: 100%` while `body` used `100dvh`, causing a height mismatch on iOS Safari with its dynamic address bar. Both now use `100dvh`. Added `touch-action: pan-y` on `#output` in the mobile media query for explicit vertical scroll gesture handling.
+
 ### 2026-07-06 — Chart.js race + config import fixes
 - **Chart.js double-load race** (`shell/js/charts.js`): `chartJsReady = true` was set before the CDN script finished loading, causing `initGraphs()` calls during the load window to skip `ensureChartJs()` and render with `Chart` undefined — graphs failed silently. Fixed by adding a `chartJsLoading` dedup flag; `ensureChartJs()` now waits for in-flight loads, and `renderAll()` re-queues graphs if `Chart` is still undefined.
 - **Config import resolution** (`terminal.config.ts`): bare specifier `from 'terminalx'` couldn't be resolved by jiti, so the user's overrides silently fell back to defaults. Changed to `from './index.js'`.
@@ -191,7 +196,8 @@ When making changes, verify:
 
 ## Common Pitfalls
 
-- **Graph rendering fails:** Ensure `graph.js` sentinel tokens are properly swapped in `render.js` post-render. The HTML must contain `<canvas data-graph-id="...">` elements. The `initGraphs()` call in `app.js` must `await` before `cmdCat` finishes, and `charts.js` deduplicates Chart.js loads via a `chartJsLoading` flag to prevent double-load races. Graph configs from `fs.json` are cloned via `JSON.parse(JSON.stringify())` before spreading to avoid Proxy issues.
+- **Graph rendering fails:** Ensure `graph.js` sentinel tokens are properly swapped in `render.js` post-render. The HTML must contain `<canvas data-graph-id="...">` elements. The `initGraphs()` call in `app.js` must `await` before `cmdCat` finishes, and `charts.js` deduplicates Chart.js loads via a `chartJsLoading` flag to prevent double-load races. Graph configs from `fs.json` are cloned via `JSON.parse(JSON.stringify())` before spreading to avoid Proxy issues. **Critical:** `renderAll()` must use `pendingGraphs.splice(0)` (not `pendingGraphs` + `length = 0`) to avoid the reference-emptying bug.
+- **Mobile scroll fails:** The click-to-focus handler in `app.js` must not intercept touch-scroll gestures. Use `touchstart`/`touchmove` listeners to detect scroll intent (>5px movement) and skip input focus when scrolling. Set `touch-action: pan-y` on `#output` for explicit vertical scroll on mobile.
 - **Build dev mode missing server:** `build/dev.js` watches and rebuilds but does not serve. Use `npx sirv dist` or `python -m http.server` separately.
 - **Config not loading:** `jiti` needs the site directory as its working context. The `SITE_DIR` env var is passed by `bin/terminalx.js`.
 - **Theme variables not applied:** `theme.css` must load **before** `terminal.css` in `index.html`. Check the `<link>` order.

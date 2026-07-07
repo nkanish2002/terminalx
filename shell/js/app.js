@@ -445,11 +445,29 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
   
-  // Click to focus input
-  document.addEventListener('click', (e) => {
+  // Click to focus input (with touch scroll awareness for mobile)
+  let touchStartY = 0;
+  let isScrolling = false;
+
+  document.addEventListener('touchstart', (e) => {
     if (e.target.id !== 'cmd-input') {
+      touchStartY = e.touches[0].clientY;
+      isScrolling = false;
+    }
+  }, { passive: true });
+
+  document.addEventListener('touchmove', (e) => {
+    if (e.target.id !== 'cmd-input') {
+      const deltaY = Math.abs(e.touches[0].clientY - touchStartY);
+      if (deltaY > 5) isScrolling = true;
+    }
+  }, { passive: true });
+
+  document.addEventListener('click', (e) => {
+    if (e.target.id !== 'cmd-input' && !isScrolling) {
       input.focus();
     }
+    isScrolling = false;
   });
   
   // Theme toggle
