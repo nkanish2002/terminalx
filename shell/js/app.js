@@ -18,6 +18,7 @@ let commandHistory = [];
 let historyIndex = -1;
 let currentTheme = localStorage.getItem('terminalx-theme') || 'dark';
 const commands = {};
+let openModalActive = false;
 
 // ── Theme ─────────────────────────────────────────────────────────────────
 function toggleTheme() {
@@ -105,7 +106,8 @@ function initCommands() {
   // Register built-in commands
   const builtins = {
     ls: (args) => cmdLs(args),
-    cat: (args) => cmdCat(args),
+    open: (args) => cmdOpen(args),
+    cat: (args) => cmdOpen(args), // alias to open
     cd: (args) => cmdCd(args),
     pwd: () => addOutputLine(currentDir),
     tree: (args) => cmdTree(args),
@@ -224,35 +226,34 @@ async function cmdLs(args) {
   }
 }
 
-async function cmdCat(args) {
+async function cmdOpen(args) {
   if (!args[0]) {
-    addOutputLine('usage: cat <file>', 'warning');
+    addOutputLine('usage: open <file>', 'warning');
     return;
   }
-  
+
   const target = resolvePath(args[0]);
   const node = manifest.tree[target];
-  
+
   if (!node) {
     addOutputLine(`No such file or directory: ${target}`, 'error');
     return;
   }
-  
+
   if (node.type === 'dir') {
     addOutputLine('Is a directory', 'error');
     return;
   }
-  
+
   // Fetch content
   let content = contentCache[target];
-  
+
   if (!content) {
     if (manifest.inlined) {
       addOutputLine('Error: content not found in manifest', 'error');
       return;
     }
-    
-    // Lazy fetch per-file content (skip double-slash paths)
+
     const fetchPath = target.replace(/^\/+/, '');
     addOutputLine('Loading...', 'info');
     try {
@@ -265,31 +266,69 @@ async function cmdCat(args) {
       return;
     }
   }
-  
-  // Render file header
+
+  openFileModal(target, node, content);
+}
+
+// ── File Open Modal ──────────────────────────────────────────────────────
+
+function openFileModal(target, node, content) {
+  const overlay = document.getElementById('open-overlay');
+  const titlePath = overlay.querySelector('.open-title-path');
+  const body = overlay.querySelector('.open-body');
+
+  // Close any existing charts to avoid duplicates
+  closeFileModal(true);
+
+  // Title bar
+  const fileName = target.split('/').pop();
+  titlePath.textContent = fileName;
+
+  // File info line
   const ext = (node.ext || '').replace('.', '').toUpperCase();
   const size = node.size ? formatBytes(node.size) : '';
   const icon = ext === 'MD' ? '📝' : ext === 'JSON' ? '📋' : '📄';
-  
-  addOutputLine(
-    `<div class="file-header">
-      <span class="file-header-icon">${icon}</span>
-      <span class="file-header-path">${escapeHtml(target)}</span>
-      <span class="file-header-meta">${ext}${size ? ' · ' + size : ''}</span>
-    </div>`
-  );
-  
-  // Render content - use html if available, otherwise raw
+
+  let infoHtml = `
+    <div class="open-file-info">
+      <span class="file-icon">${icon}</span>
+      <span class="file-path">${escapeHtml(target)}</span>
+      <span class="file-meta">${ext}${size ? ' · ' + size : ''}</span>
+    </div>`;
+
+  // Content
+  let contentHtml = '';
   if (content.html) {
-    addOutputLine(`<div class="file-content">${content.html}</div>`);
-    
-    // Initialize graphs if any
-    if (content.graphs && content.graphs.length > 0) {
-      await initGraphs(content.graphs);
-    }
+    contentHtml = content.html;
   } else if (content.raw) {
-    addOutputLine(`<div class="file-content"><pre>${escapeHtml(content.raw)}</pre></div>`);
+    contentHtml = `<pre class="open-raw">${escapeHtml(content.raw)}</pre>`;
   }
+
+  body.innerHTML = infoHtml + contentHtml;
+
+  // Show overlay
+  overlay.classList.remove('hidden');
+  openModalActive = true;
+
+  // Initialize graphs after DOM update
+  if (content.graphs && content.graphs.length > 0) {
+    // Small delay to let the browser render the canvas elements
+    requestAnimationFrame(() => {
+      initGraphs(content.graphs);
+    });
+  }
+}
+
+function closeFileModal(silent = false) {
+  // Destroy any existing Chart instances
+  if (typeof Chart !== 'undefined' && Chart.instances) {
+    Object.values(Chart.instances).forEach(chart => chart.destroy());
+  }
+
+  const overlay = document.getElementById('open-overlay');
+  overlay.classList.add('hidden');
+  overlay.querySelector('.open-body').innerHTML = '';
+  openModalActive = false;
 }
 
 function cmdCd(args) {
@@ -481,6 +520,32 @@ document.addEventListener('DOMContentLoaded', () => {
         input.focus();
       }
     });
+  }
+
+  // ESC key closes the open modal (and refocuses input)
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      if (openModalActive) {
+        closeFileModal();
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    }
+  });
+
+  // Also listen globally for ESC in case input isn't focused
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && openModalActive) {
+      closeFileModal();
+    }
+  });
+
+  // Open modal: close buttons
+  const overlay = document.getElementById('open-overlay');
+  if (overlay) {
+    overlay.querySelector('.open-backdrop')?.addEventListener('click', closeFileModal);
+    overlay.querySelector('.open-close-btn')?.addEventListener('click', closeFileModal);
+    overlay.querySelector('.open-close-icon')?.addEventListener('click', closeFileModal);
   }
   
   // Theme toggle

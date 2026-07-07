@@ -25,7 +25,7 @@ export function setRouterReady() {
  * Run the landing command from config.
  */
 function runLanding() {
-  const landing = window.manifest?.config?.content?.landing || 'cat /docs/readme.md';
+  const landing = window.manifest?.config?.content?.landing || 'open /docs/readme.md';
   const parts = landing.split(/\s+/);
   const cmd = parts[0];
   const args = parts.slice(1);
