@@ -27,6 +27,7 @@ const ANY_COMMANDS = new Set(['ls']);
 let activeCommand = null;
 let commandBarVisible = true;
 let alwaysVisible = true;
+let currentPickerPath = null;  // tracked path context for nested picker browsing
 
 /**
  * Initialize the command bar and argument picker.
@@ -129,6 +130,7 @@ function onCommandClick(cmd) {
   if (!input) return;
 
   activeCommand = cmd;
+  currentPickerPath = null;  // reset to currentDir context
 
   if (NO_ARG_COMMANDS.has(cmd)) {
     // Auto-execute commands that take no arguments
@@ -170,7 +172,7 @@ function renderPicker(cmd) {
     const btn = document.createElement('button');
     btn.className = `arg-btn ${item.type === 'dir' ? 'arg-dir' : 'arg-file'}`;
     btn.textContent = item.label;
-    btn.addEventListener('click', () => onArgumentClick(item.value));
+    btn.addEventListener('click', () => onArgumentClick(item.value, item.type));
     picker.appendChild(btn);
   }
 
@@ -189,19 +191,37 @@ function onArgumentClick(value) {
   input.value = activeCommand + ' ' + value;
   input.focus();
 
+  // If the clicked argument is a directory, drill into it and re-render the picker
+  if (value === '..') {
+    // Navigate up one level
+    const basePath = currentPickerPath !== null ? currentPickerPath : window.currentDir;
+    if (basePath !== '/') {
+      currentPickerPath = basePath.split('/').slice(0, -1).join('/') || '/';
+    }
+    renderPicker(activeCommand);
+    return;
+  }
+
+  const manifest = window.manifest;
+  const childNode = manifest && manifest.tree[value];
+  if (childNode && childNode.type === 'dir') {
+    currentPickerPath = value;
+    renderPicker(activeCommand);
+  }
   // Keep picker visible so user can switch arguments
   // (hide on execution instead)
 }
 
 /**
  * Get contextual suggestions for a command.
+ * Uses currentPickerPath if set (nested browsing), otherwise currentDir.
  */
 function getSuggestions(cmd) {
   const manifest = window.manifest;
-  const currentDir = window.currentDir;
   if (!manifest || !manifest.tree) return [];
 
-  const node = manifest.tree[currentDir];
+  const baseDir = currentPickerPath !== null ? currentPickerPath : window.currentDir;
+  const node = manifest.tree[baseDir];
   if (!node || !node.children) {
     // Root edge case — try '/'
     const rootNode = manifest.tree['/'];
@@ -209,7 +229,7 @@ function getSuggestions(cmd) {
     return buildSuggestions(rootNode.children, '/', cmd);
   }
 
-  return buildSuggestions(node.children, currentDir, cmd);
+  return buildSuggestions(node.children, baseDir, cmd);
 }
 
 /**
