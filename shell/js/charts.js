@@ -67,8 +67,7 @@ export async function initGraphs(graphs) {
  * Render all collected graphs.
  */
 function renderAll() {
-  const graphs = pendingGraphs;
-  pendingGraphs.length = 0;
+  const graphs = pendingGraphs.splice(0);
 
   for (const graph of graphs) {
     const canvas = document.querySelector(`[data-graph-id="${graph.id}"]`);
