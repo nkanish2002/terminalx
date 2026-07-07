@@ -117,6 +117,7 @@ body {
   background-color: var(--bg);
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
+  touch-action: pan-y;
 }
 
 #input-line {
@@ -280,6 +281,105 @@ canvas {
   margin: 8px 0;
 }
 
+/* File header banner for cat */
+.file-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  margin: 8px 0 12px;
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 0.85em;
+  color: var(--white);
+}
+
+.file-header-icon {
+  color: var(--cyan);
+  font-size: 1.1em;
+}
+
+.file-header-path {
+  color: var(--cyan);
+  font-weight: bold;
+  word-break: break-all;
+}
+
+.file-header-meta {
+  color: var(--white);
+  opacity: 0.6;
+  margin-left: auto;
+  white-space: nowrap;
+  font-size: 0.9em;
+}
+
+/* File content wrapper for cat */
+.file-content {
+  padding: 0 4px;
+  margin: 4px 0 16px;
+}
+
+.file-content h1 {
+  color: var(--white);
+  font-size: 1.3em;
+  margin: 8px 0 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.file-content h2 {
+  color: var(--white);
+  font-size: 1.1em;
+  margin: 16px 0 8px;
+}
+
+.file-content h3 {
+  color: var(--cyan);
+  font-size: 1em;
+  margin: 12px 0 6px;
+}
+
+.file-content h4,
+.file-content h5,
+.file-content h6 {
+  color: var(--white);
+  margin: 10px 0 4px;
+}
+
+.file-content p {
+  margin: 8px 0;
+  color: var(--white);
+}
+
+.file-content ul,
+.file-content ol {
+  margin: 6px 0;
+  padding-left: 20px;
+  color: var(--white);
+}
+
+.file-content li {
+  margin: 3px 0;
+  color: var(--white);
+}
+
+.file-content hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 16px 0;
+}
+
+.file-content em {
+  color: var(--white);
+  opacity: 0.7;
+}
+
+.file-content strong {
+  color: var(--white);
+}
+
 /* Mobile viewport fix for Safari */
 @supports (-webkit-touch-callout: none) {
   body {
@@ -351,6 +451,34 @@ canvas {
   
   th, td {
     padding: 4px 6px;
+  }
+
+  .file-header {
+    padding: 6px 8px;
+    gap: 6px;
+    font-size: 0.8em;
+  }
+
+  .file-header-meta {
+    margin-left: 0;
+    width: 100%;
+    margin-top: 4px;
+  }
+
+  .file-content {
+    padding: 0 2px;
+  }
+
+  .file-content h1 {
+    font-size: 1.15em;
+  }
+
+  .file-content h2 {
+    font-size: 1em;
+  }
+
+  .file-content p {
+    font-size: 0.9em;
   }
 }
 

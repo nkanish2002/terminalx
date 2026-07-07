@@ -266,16 +266,29 @@ async function cmdCat(args) {
     }
   }
   
+  // Render file header
+  const ext = (node.ext || '').replace('.', '').toUpperCase();
+  const size = node.size ? formatBytes(node.size) : '';
+  const icon = ext === 'MD' ? '📝' : ext === 'JSON' ? '📋' : '📄';
+  
+  addOutputLine(
+    `<div class="file-header">
+      <span class="file-header-icon">${icon}</span>
+      <span class="file-header-path">${escapeHtml(target)}</span>
+      <span class="file-header-meta">${ext}${size ? ' · ' + size : ''}</span>
+    </div>`
+  );
+  
   // Render content - use html if available, otherwise raw
   if (content.html) {
-    addOutputLine(content.html);
+    addOutputLine(`<div class="file-content">${content.html}</div>`);
     
     // Initialize graphs if any
     if (content.graphs && content.graphs.length > 0) {
       await initGraphs(content.graphs);
     }
   } else if (content.raw) {
-    addOutputLine(`<pre>${escapeHtml(content.raw)}</pre>`);
+    addOutputLine(`<div class="file-content"><pre>${escapeHtml(content.raw)}</pre></div>`);
   }
 }
 
@@ -354,6 +367,12 @@ function escapeHtml(text) {
   const div = document.createElement('div');
   div.textContent = text;
   return div.innerHTML;
+}
+
+function formatBytes(bytes) {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / 1048576).toFixed(1) + ' MB';
 }
 
 // ── Tab Completion ────────────────────────────────────────────────────────
