@@ -445,30 +445,24 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
   
-  // Click to focus input (with touch scroll awareness for mobile)
-  let touchStartY = 0;
-  let isScrolling = false;
-
-  document.addEventListener('touchstart', (e) => {
-    if (e.target.id !== 'cmd-input') {
-      touchStartY = e.touches[0].clientY;
-      isScrolling = false;
-    }
-  }, { passive: true });
-
-  document.addEventListener('touchmove', (e) => {
-    if (e.target.id !== 'cmd-input') {
-      const deltaY = Math.abs(e.touches[0].clientY - touchStartY);
-      if (deltaY > 5) isScrolling = true;
-    }
-  }, { passive: true });
-
-  document.addEventListener('click', (e) => {
-    if (e.target.id !== 'cmd-input' && !isScrolling) {
-      input.focus();
-    }
-    isScrolling = false;
-  });
+  // Click to focus input
+  // On touch devices, only tap the input line to focus — global click
+  // handler interferes with scroll gestures and triggers the keyboard.
+  // On desktop, clicking anywhere focuses the input for convenience.
+  if (!('ontouchstart' in window) && navigator.maxTouchPoints === 0) {
+    document.addEventListener('click', (e) => {
+      if (e.target.id !== 'cmd-input') {
+        input.focus();
+      }
+    });
+  } else {
+    // Touch devices: only focus when tapping the input line itself
+    document.getElementById('input-line').addEventListener('click', (e) => {
+      if (e.target.id !== 'cmd-input') {
+        input.focus();
+      }
+    });
+  }
   
   // Theme toggle
   const themeToggle = document.getElementById('theme-toggle');
