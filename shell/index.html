@@ -24,6 +24,21 @@
       <span id="theme-toggle" class="theme-toggle" title="Toggle theme">◐</span>
     </div>
     <div id="output"></div>
+    <div id="open-overlay" class="hidden">
+      <div class="open-backdrop"></div>
+      <div class="open-window">
+        <div class="open-titlebar">
+          <div class="dots">
+            <span class="dot red open-close-btn"></span>
+            <span class="dot yellow open-minimize-btn"></span>
+            <span class="dot green open-maximize-btn"></span>
+          </div>
+          <span class="open-title-path"></span>
+          <button class="open-close-icon" aria-label="Close">&times;</button>
+        </div>
+        <div class="open-body"></div>
+      </div>
+    </div>
     <div id="input-line">
       <span id="prompt"></span>
       <input type="text" id="cmd-input" autocomplete="off" spellcheck="false" />

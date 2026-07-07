@@ -31,14 +31,14 @@ export default defineConfig({
   // Content + landing view
   content: {
     dir: 'content',
-    landing: 'cat /docs/readme.md',
+    landing: 'open /docs/readme.md',
     home: '/',
   },
 
   // Enabled commands + aliases
   commands: {
     enabled: [
-      'ls', 'cat', 'cd', 'pwd', 'tree', 'clear',
+      'ls', 'open', 'cd', 'pwd', 'tree', 'clear',
       'help', 'whoami', 'date', 'search',
     ],
     aliases: {
