@@ -62,6 +62,12 @@ export const DEFAULTS = {
     inlineThreshold: 512000, // 500KB
     basePath: './',
   },
+  ui: {
+    commandBar: {
+      enabled: true,
+      alwaysVisible: true,
+    },
+  },
 };
 
 /**

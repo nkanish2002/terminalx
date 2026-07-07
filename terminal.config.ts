@@ -64,4 +64,12 @@ export default defineConfig({
     inlineThreshold: 512000, // 500KB
     basePath: './',
   },
+
+  // UI options
+  ui: {
+    commandBar: {
+      enabled: true,
+      alwaysVisible: true,  // set false to hide until input focused
+    },
+  },
 });

@@ -9,6 +9,7 @@
 import { cmdSearch } from './search.js';
 import { initGraphs } from './charts.js';
 import { initRouter, updateHash, setRouterReady } from './router.js';
+import { initButtons, resetBars } from './buttons.js';
 
 // ── Shared State ──────────────────────────────────────────────────────────
 let manifest = null;
@@ -89,6 +90,9 @@ async function init() {
     initRouter();
     setRouterReady();
     
+    // Initialize command bar buttons
+    initButtons(manifest);
+    
   } catch (err) {
     console.error('Initialization error:', err);
     addOutputLine(`Error: ${err.message}`, 'error');
@@ -168,6 +172,9 @@ function executeCommand(input) {
       addOutputLine(`command not found: ${cmdName}`, 'error');
     }
     updateHash(cmdName, args);
+    resetBars();
+    // Refresh picker if active (e.g. after cd changes currentDir)
+    if (window.updateArgumentPicker) window.updateArgumentPicker();
   })();
 }
 
@@ -500,6 +507,9 @@ document.addEventListener('DOMContentLoaded', () => {
     } else if (e.key === '/' && e.ctrlKey) {
       e.preventDefault();
       commands.help();
+    } else if (e.key === 'b' && e.ctrlKey) {
+      e.preventDefault();
+      if (window.toggleCommandBar) window.toggleCommandBar();
     }
   });
   

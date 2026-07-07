@@ -70,6 +70,7 @@ async function build() {
       },
       commands: config.commands,
       charts: config.charts,
+      ui: config.ui,
     },
     tree,
   };
