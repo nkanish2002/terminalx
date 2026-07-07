@@ -719,3 +719,136 @@ canvas {
 .theme-toggle:hover {
   opacity: 0.8;
 }
+
+/* ── Command Bar + Argument Picker ──────────────────────────────────────── */
+
+.button-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-bottom: none;
+  overflow-x: auto;
+  overflow-y: hidden;
+  flex-shrink: 0;
+  max-height: 60px;
+  transition: opacity 0.2s ease, max-height 0.2s ease, padding 0.2s ease;
+  opacity: 1;
+}
+
+.button-bar:last-of-type {
+  border-bottom: 1px solid var(--border);
+}
+
+.button-bar.hidden {
+  display: flex;
+  opacity: 0;
+  max-height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+/* Scrollbar for button bars */
+.button-bar::-webkit-scrollbar {
+  height: 4px;
+}
+
+.button-bar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.button-bar::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 2px;
+}
+
+.button-bar::-webkit-scrollbar-thumb:hover {
+  background: var(--green);
+}
+
+/* Command buttons */
+.cmd-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--green);
+  font-family: var(--font-family);
+  font-size: 12px;
+  padding: 3px 10px;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.cmd-btn:hover {
+  background: var(--border);
+  border-color: var(--green);
+  color: var(--white);
+}
+
+.cmd-btn:active {
+  background: var(--green);
+  color: var(--bg);
+}
+
+/* Argument buttons */
+.arg-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-family: var(--font-family);
+  font-size: 12px;
+  padding: 3px 10px;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.arg-btn:hover {
+  background: var(--border);
+  color: var(--white);
+}
+
+.arg-btn:active {
+  background: var(--green);
+  color: var(--bg);
+}
+
+.arg-dir {
+  color: var(--cyan);
+}
+
+.arg-dir:hover {
+  border-color: var(--cyan);
+}
+
+.arg-file {
+  color: var(--yellow);
+}
+
+.arg-file:hover {
+  border-color: var(--yellow);
+}
+
+/* Mobile: make button bars wrap instead of scroll */
+@media (max-width: 768px) {
+  .button-bar {
+    flex-wrap: wrap;
+    max-height: none;
+    gap: 4px;
+    padding: 4px 6px;
+  }
+
+  .cmd-btn,
+  .arg-btn {
+    font-size: 11px;
+    padding: 4px 8px;
+    min-height: 44px;
+  }
+}

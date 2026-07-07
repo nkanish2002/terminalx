@@ -30,6 +30,7 @@ terminalx/
 │   │   └── prism-terminal.css  # Prism token → terminal palette mapping
 │   └── js/
 │       ├── app.js          #  Command loop + dispatcher (ls/cat/cd/...)
+│       ├── buttons.js      #  Command bar + argument picker UI
 │       ├── router.js       #  Hash-route deep-linking
 │       ├── search.js       #  Client-side search over search-index.json
 │       └── charts.js       #  Chart.js lazy loader + graph renderer
@@ -69,6 +70,7 @@ export default defineConfig({
   search: { snippetChars, fields },
   charts: { defaultType, palette },
   build: { outDir, inlineThreshold, basePath },
+  ui: { commandBar: { enabled, alwaysVisible } },
 });
 ```
 
@@ -77,7 +79,7 @@ export default defineConfig({
 2. Deep-merges over built-in `DEFAULTS` (partial configs are valid)
 3. Validates required sections
 4. **Style** (`theme.*`) → `build/theme.js` → generated `dist/css/theme.css` (CSS custom properties)
-5. **Behavior** (`site`, `content.landing`, `commands`, `charts`) → embedded in `manifest.config` → read by `app.js` at runtime
+5. **Behavior** (`site`, `content.landing`, `commands`, `charts`, `ui`) → embedded in `manifest.config` → read by `app.js` at runtime
 6. **Build-only** (`content.dir`, `build.*`, `search.*`) → consumed by pipeline only, never shipped
 
 ## Build Pipeline
@@ -105,7 +107,7 @@ export default defineConfig({
 {
   "generatedAt": "...",
   "inlined": true,
-  "config": { "site": {...}, "content": {...}, "commands": {...}, "charts": {...} },
+  "config": { "site": {...}, "content": {...}, "commands": {...}, "charts": {...}, "ui": {...} },
   "tree": { "/": { "type": "dir", "children": [...] }, ... }
 }
 ```
@@ -130,6 +132,7 @@ The SPA (`shell/index.html` + `shell/js/`) runs entirely client-side after build
 - **Modal:** `#open-overlay` is a fixed-position overlay with its own scrollable body. Desktop: 720px centered island. Mobile: full-screen. Close via ESC, backdrop tap, or titlebar buttons.
 - **Routing:** hash-based (`#/open/docs/readme.md`). On load with no hash → run `config.content.landing` command
 - **Tab completion:** commands + file paths from tree
+- **Command bar + argument picker:** optional button layer above input line. Command bar shows pill buttons for all enabled commands. Clicking a command inserts it into the input and (for commands that take arguments) shows contextual path suggestions from the file tree. Zero-arg commands (`clear`, `pwd`, `whoami`, `date`, `help`) auto-execute on click. Controlled by `config.ui.commandBar`. Manual typing hides the picker. Toggle with `Ctrl+B`.
 - **History:** ↑/↓ arrows
 - **Theme toggle:** dark/light via `localStorage` + CSS class swap
 - **`cat`**: kept as an alias to `open` for backward compatibility
@@ -179,8 +182,22 @@ When making changes, verify:
 - [ ] Modal closes on ESC, backdrop click, or titlebar buttons
 - [ ] Tab completion works for commands and paths
 - [ ] Theme toggle (dark/light) persists
+- [ ] Command bar renders all enabled commands from config
+- [ ] Clicking a command button inserts it into input
+- [ ] Argument picker shows correct suggestions per command type (dirs for cd, files for open, all for ls)
+- [ ] Zero-arg commands auto-execute on button click
+- [ ] `Ctrl+B` toggles bar visibility
+- [ ] `ui.commandBar.alwaysVisible: false` hides bar until input focused
 
 ## Changelog / Resolved Issues
+
+### 2026-07-07 — Command bar + argument picker button UI
+- **New `shell/js/buttons.js`**: Self-contained module rendering a command bar (pill buttons for all enabled commands) and a contextual argument picker above the input line. Zero-arg commands (`clear`, `pwd`, `whoami`, `date`, `help`) auto-execute on click. Directory suggestions shown in `--cyan`, file suggestions in `--yellow`.
+- **`Ctrl+B` keyboard shortcut** (`shell/js/app.js`): Toggles command bar visibility.
+- **Smooth show/hide animations** (`shell/css/terminal.css`): Fade + slide via CSS transitions on `opacity` and `max-height`.
+- **`ui.commandBar` config option** (`build/config.js`, `terminal.config.ts`): `enabled` (default `true`) and `alwaysVisible` (default `true`; set `false` to hide until input focused). Flows through `manifest.config.ui` to `buttons.js` at runtime.
+- **Mobile responsive** (`shell/css/terminal.css`): Bars wrap to multiple rows on narrow screens; minimum 44px tap targets.
+- **Manifest now ships `ui` config** (`build/index.js`): Added `ui` section to emitted `manifest.json`.
 
 ### 2026-07-07 — cat → open modal viewer
 - **`cat` output was unscrollable** (`shell/js/app.js`, `shell/css/terminal.css`): Content dumped into `#output` could not scroll on mobile due to `overflow: hidden` on `html`/`body`. Replaced `cat` with `open` command that shows a centered scrollable modal overlay. Desktop: 720px island with backdrop blur. Mobile: full-screen overlay. `cat` kept as alias.
