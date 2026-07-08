@@ -357,6 +357,24 @@ canvas { max-width: 100%; height: auto; margin: 8px 0; }
   opacity: 1;
 }
 
+/* ── Submit button ─────────────────────────────────────────────────── */
+
+#cmd-submit {
+  background: transparent;
+  border: none;
+  color: var(--green);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 2px 4px;
+  flex-shrink: 0;
+  opacity: 0.5;
+  transition: opacity 0.15s;
+}
+
+#cmd-submit:hover  { opacity: 1; }
+#cmd-submit:active { opacity: 0.7; }
+
 /* ── Open Modal ────────────────────────────────────────────────────── */
 
 #open-overlay {
@@ -586,6 +604,7 @@ canvas { max-width: 100%; height: auto; margin: 8px 0; }
   #input-line { padding: 3px 6px; min-height: 32px; gap: 4px; }
   #prompt     { font-size: 0.9em; margin-right: 2px; }
   #cmd-input  { font-size: 16px; padding: 4px 0; }
+  #cmd-submit { font-size: 18px; padding: 2px 6px; min-width: 44px; min-height: 44px; }
 
   pre  { padding: 8px; font-size: 0.85em; margin: 4px 0; }
   table { font-size: 0.85em; }
