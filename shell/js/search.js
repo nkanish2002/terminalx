@@ -204,8 +204,11 @@ export async function cmdSearch(args) {
     }
   }
 
-  // Scroll to show results
-  output.scrollTop = output.scrollHeight;
+  // Scroll to show results (only if user was near the bottom)
+  const isNearBottom = output.scrollHeight - output.scrollTop - output.clientHeight < 100;
+  if (isNearBottom) {
+    output.scrollTop = output.scrollHeight;
+  }
 }
 
 function escapeHtml(text) {
