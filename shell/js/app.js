@@ -185,7 +185,13 @@ function addOutputLine(text, className = '') {
   line.className = `output-line ${className}`;
   line.innerHTML = text;
   output.appendChild(line);
-  output.scrollTop = output.scrollHeight;
+
+  // Auto-scroll only if the user is already near the bottom (within 100px)
+  // This lets users scroll up to review earlier output without being yanked back
+  const isNearBottom = output.scrollHeight - output.scrollTop - output.clientHeight < 100;
+  if (isNearBottom) {
+    output.scrollTop = output.scrollHeight;
+  }
 }
 
 function getPrompt() {
