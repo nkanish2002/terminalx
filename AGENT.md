@@ -122,11 +122,41 @@ export default defineConfig({
 [{ "path": "/docs/readme.md", "title": "Welcome", "text": "stripped body text..." }]
 ```
 
+## Shell SPA Layout
+
+The terminal uses a **fixed three-section flex column** that fills the viewport:
+
+```
+#terminal (flex column, 100% height)
+├── #titlebar       (flex-shrink: 0) — window chrome
+├── #output         (flex: 1, min-height: 0, overflow-y: auto) — scrollable console
+└── #bottom         (flex-shrink: 0) — always pinned to screen bottom
+    ├── #command-bar      (button-bar, hidden when no active command)
+    ├── #argument-picker  (button-bar, hidden when no active command)
+    └── #input-line       (prompt + input)
+```
+
+**`#output`** is the only scrollable region in the terminal. It gets `flex: 1; min-height: 0` so it shrinks to fit remaining space while content scrolls inside it. Auto-scroll is always on by default (`shouldAutoScroll = true`). A scroll listener on `#output` flips it to `false` when the user scrolls up, and back to `true` when they scroll to the bottom.
+
+**`#bottom`** is `flex-shrink: 0` — it never gets squished, keeping the input bar and buttons anchored to the screen bottom at all times.
+
+**`#open-overlay`** is a fixed-position overlay **outside** `#terminal` (not a child). It has its own scrollable `.open-body` container. This keeps the modal independent of the terminal's flex layout.
+
+**Prompt format:** `user@host /path$` — the current working directory is shown in the prompt. `updatePrompt()` is called on every `cd` to refresh both the prompt and the titlebar path.
+
+### Button bars
+- `.button-bar` elements are the command bar and argument picker. They sit inside `#bottom` above the input line.
+- `.button-bar.hidden` uses `display: none` (not opacity/height transitions) so hidden bars are fully removed from the flex layout flow.
+- Controlled by `config.ui.commandBar` in `buttons.js`.
+
 ## Shell SPA
 
 The SPA (`shell/index.html` + `shell/js/`) runs entirely client-side after build:
 
 - **Startup:** fetch `manifest.json` → config + tree; if `inlined: true`, fetch `fs.json` to seed content cache
+- **Layout:** `#output` (scrollable console) fills remaining viewport space. `#bottom` (button bars + input) stays pinned to screen bottom. `#open-overlay` lives outside `#terminal` as a fixed-position overlay.
+- **Prompt:** shows current path — `user@host /path$`. Updates on `cd`.
+- **Auto-scroll:** `shouldAutoScroll` flag. On by default, toggled off when user scrolls up, toggled on when they scroll to bottom.
 - **Commands:** `ls`, `open`, `cd`, `pwd`, `tree`, `clear`, `help`, `whoami`, `date`, `search` — gated by `config.commands.enabled`
 - **`open` flow:** resolve path → check cache → if not inlined, `fetch` per-file JSON → open scrollable modal overlay with file content → init graphs if present
 - **Modal:** `#open-overlay` is a fixed-position overlay with its own scrollable body. Desktop: 720px centered island. Mobile: full-screen. Close via ESC, backdrop tap, or titlebar buttons.
@@ -174,7 +204,10 @@ When making changes, verify:
 
 - [ ] `npm run build` completes without errors
 - [ ] `dist/manifest.json` is valid JSON with expected structure
-- [ ] Open `dist/index.html` in a browser — terminal loads, prompt renders
+- [ ] Open `dist/index.html` in a browser — terminal loads, prompt renders with path
+- [ ] Input bar stays pinned to bottom regardless of output volume
+- [ ] `#output` scrolls independently; content doesn't overflow the viewport
+- [ ] Scrolling up in `#output` pauses auto-scroll; scrolling back to bottom resumes it
 - [ ] `ls` shows directory tree, `cd` navigates, `open` renders Markdown in modal
 - [ ] `search <query>` returns results with snippets, clicking results opens files
 - [ ] Hash routing: `#/open/docs/readme.md` loads content directly in modal
@@ -190,6 +223,14 @@ When making changes, verify:
 - [ ] `ui.commandBar.alwaysVisible: false` hides bar until input focused
 
 ## Changelog / Resolved Issues
+
+### 2026-07-07 — Layout refactor: input bar pinned to bottom, path in prompt
+- **Input bar was not pinned to bottom** (`shell/index.html`, `shell/css/terminal.css`): The `#command-bar`, `#argument-picker`, and `#input-line` were siblings of `#output` inside `#terminal`. When output grew, the input bar scrolled off-screen with it. Added a new `#bottom` container with `flex-shrink: 0` wrapping the button bars and input line, keeping them anchored to the screen bottom.
+- **`#output` needed flex min-height fix** (`shell/css/terminal.css`): Added `min-height: 0` so `#output` can shrink past its content size inside the flex container. Without it, content overflows the viewport and becomes invisible.
+- **Button bars interfered with flex layout** (`shell/css/terminal.css`): `.button-bar.hidden` used `display: flex` + opacity/height transitions, keeping hidden bars in the flex calculation. Changed to `display: none`.
+- **`#open-overlay` moved outside `#terminal`** (`shell/index.html`): The modal was a child of `#terminal`, interfering with the flex layout. Moved to be a sibling of `#terminal` under `<body>`.
+- **Prompt now shows current path** (`shell/js/app.js`): Changed from `user@host$` to `user@host /path$`. Added `.path` CSS class (purple color). `updatePrompt()` called on every `cd` to keep prompt in sync.
+- **Auto-scroll tracks user intent** (`shell/js/app.js`, `shell/js/router.js`, `shell/js/search.js`): Position-based "near bottom" checks fail when content first overflows. Replaced with `shouldAutoScroll` boolean flag — a scroll listener on `#output` toggles it off when user scrolls up, on when they reach bottom. `clear` resets it.
 
 ### 2026-07-07 — Command bar + argument picker button UI
 - **New `shell/js/buttons.js`**: Self-contained module rendering a command bar (pill buttons for all enabled commands) and a contextual argument picker above the input line. Zero-arg commands (`clear`, `pwd`, `whoami`, `date`, `help`) auto-execute on click. Directory suggestions shown in `--cyan`, file suggestions in `--yellow`.
@@ -229,6 +270,7 @@ When making changes, verify:
 
 - **Graph rendering fails:** Ensure `graph.js` sentinel tokens are properly swapped in `render.js` post-render. The HTML must contain `<canvas data-graph-id="...">` elements. The `initGraphs()` call in `app.js` must be awaited (commands are dispatched through async IIFE in `executeCommand`), and `charts.js` deduplicates Chart.js loads via a `chartJsLoading` flag to prevent double-load races. Graph configs from `fs.json` are cloned via `JSON.parse(JSON.stringify())` before spreading to avoid Proxy issues. **Critical:** `renderAll()` must use `pendingGraphs.splice(0)` (not `pendingGraphs` + `length = 0`) to avoid the reference-emptying bug. Chart instances are tracked in `window.activeCharts` for manual cleanup — `Chart.instances` is deprecated in Chart.js 4.
 - **Mobile scroll fails:** The click-to-focus handler in `app.js` must not activate on touch devices outside the input line. On desktop, the handler must check `!openModalActive` to avoid interfering with the open modal. Set `touch-action: pan-y` on `#output` for explicit vertical scroll on mobile. The `open` modal has its own scrollable body separate from the terminal output.
+- **Scrolling / layout breaks:** `#output` must have `min-height: 0` to let flex shrink it past its content size. Without it, content overflows the viewport. `#bottom` must have `flex-shrink: 0` to stay pinned to the bottom. The auto-scroll flag (`shouldAutoScroll`) must be toggled by a scroll listener on `#output` — checking `scrollHeight - scrollTop - clientHeight < 50` to detect bottom. Never use position-based "near bottom" checks for auto-scroll as they fail when content first overflows the viewport.
 - **Build dev mode missing server:** `build/dev.js` watches and rebuilds but does not serve. Use `npx sirv dist` or `python -m http.server` separately.
 - **Config not loading:** `jiti` needs the site directory as its working context. The `SITE_DIR` env var is passed by `bin/terminalx.js`.
 - **Theme variables not applied:** `theme.css` must load **before** `terminal.css` in `index.html`. Check the `<link>` order.
