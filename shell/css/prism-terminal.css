@@ -18,7 +18,12 @@
 }
 
 /* Strings */
-.token.string, .token.char, .token.property, .token.attr-value {
+.token.string, .token.char, .token.attr-value {
+  color: var(--cyan);
+}
+
+/* Properties */
+.token.property, .token.attr-name {
   color: var(--cyan);
 }
 
@@ -45,12 +50,12 @@
 }
 
 /* Built-ins */
-.token.boolean, .token.builtin, .token.property, .token.tag {
+.token.builtin {
   color: var(--cyan);
 }
 
 /* Tags */
-.token.tag, .token.selector, .token.attr-name {
+.token.tag, .token.selector {
   color: var(--green);
 }
 

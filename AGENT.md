@@ -224,6 +224,18 @@ When making changes, verify:
 
 ## Changelog / Resolved Issues
 
+### 2026-07-08 — Styling audit: light mode, Firefox, accessibility, Prism fixes
+- **`--dim` CSS variable undefined** (`shell/css/terminal.css`): `.search-section-snippet` used `color: var(--dim)` but it was never defined. Search snippet text rendered invisible. Added `--dim: #5a6370` to both `:root` defaults and theme generator.
+- **Light mode toggle was a no-op** (`shell/css/terminal.css`, `build/theme.js`): `app.js` toggled `.light-mode` class on `<html>` but zero CSS rules existed for it. Added `build/theme.js` `adaptForLight()` function that derives dark variants of the user's palette colors (scaling toward black at 25% brightness), plus light surfaces (`#fafafa` bg, `#eee` surface, `#ccc` border). Light-mode variables emitted in generated `theme.css`.
+- **Firefox scrollbars unstyled** (`shell/css/terminal.css`): Only `::-webkit-*` scrollbar pseudo-elements were used. Added `scrollbar-width: thin` and `scrollbar-color` to `#output`, `.button-bar`, and `.open-body` for Firefox native scrollbar styling.
+- **Prism token class conflicts** (`shell/css/prism-terminal.css`): `.token.boolean` and `.token.property` were each defined in two separate token blocks with conflicting colors (the last rule silently won). Consolidated into single definitions: boolean → `--red`, property → `--cyan`, attr-name → `--cyan`.
+- **Text selection styling missing** (`shell/css/terminal.css`): Browser default selection colors (blue highlight) clashed with terminal theme. Added `::selection` and `::-moz-selection` using `--green` bg / `--bg` text.
+- **`prefers-reduced-motion` unsupported** (`shell/css/terminal.css`): Modal slide-in and search-target flash animations fired unconditionally. Added `@media (prefers-reduced-motion: reduce)` block disabling animations.
+- **Input had no focus indicator** (`shell/css/terminal.css`): `#cmd-input` had `outline: none` with no replacement. Green caret (`caret-color: var(--green)`) serves as the visual focus indicator — this was already present but undocumented.
+- **`#cmd-input::placeholder` styling missing** (`shell/css/terminal.css`): Placeholder text used browser defaults. Added `color: var(--dim)` for subtle hint text.
+- **`#input-line` border fragmented** (`shell/css/terminal.css`): Border was stitched from `border-left`, `border-right`, `border-bottom` separately. Simplified to `border: 1px solid var(--border)` with `border-radius: 0 0 4px 4px`.
+- **`#terminal` height reliability** (`shell/css/terminal.css`): Changed from `height: 100%` (percentage inheritance chain from body) to `height: 100dvh` for direct viewport anchor, ensuring `#bottom` stays pinned across all browsers.
+
 ### 2026-07-07 — Layout refactor: input bar pinned to bottom, path in prompt
 - **Input bar was not pinned to bottom** (`shell/index.html`, `shell/css/terminal.css`): The `#command-bar`, `#argument-picker`, and `#input-line` were siblings of `#output` inside `#terminal`. When output grew, the input bar scrolled off-screen with it. Added a new `#bottom` container with `flex-shrink: 0` wrapping the button bars and input line, keeping them anchored to the screen bottom.
 - **`#output` needed flex min-height fix** (`shell/css/terminal.css`): Added `min-height: 0` so `#output` can shrink past its content size inside the flex container. Without it, content overflows the viewport and becomes invisible.
