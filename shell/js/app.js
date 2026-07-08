@@ -173,7 +173,7 @@ function executeCommand(input) {
     } else {
       addOutputLine(`command not found: ${cmdName}`, 'error');
     }
-    updateHash(cmdName, args);
+    updateHash(cmdName, args, currentDir);
     resetBars();
     // Refresh picker if active (e.g. after cd changes currentDir)
     if (window.updateArgumentPicker) window.updateArgumentPicker();
@@ -616,6 +616,17 @@ document.addEventListener('DOMContentLoaded', () => {
     themeToggle.addEventListener('click', (e) => {
       e.stopPropagation();
       toggleTheme();
+    });
+  }
+
+  // Submit button (⏎) — executes the current input
+  const submitBtn = document.getElementById('cmd-submit');
+  if (submitBtn) {
+    submitBtn.addEventListener('click', () => {
+      if (input.value.trim()) {
+        executeCommand(input.value);
+        input.value = '';
+      }
     });
   }
   

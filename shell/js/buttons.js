@@ -183,13 +183,16 @@ function renderPicker(cmd) {
 /**
  * Called when an argument suggestion button is clicked.
  */
-function onArgumentClick(value) {
+function onArgumentClick(value, itemType) {
   const input = document.getElementById('cmd-input');
   if (!input || !activeCommand) return;
 
   // Set input to "command <arg>"
   input.value = activeCommand + ' ' + value;
   input.focus();
+
+  // Don't drill into subdirectories for file-only commands (open, cat)
+  if (FILE_COMMANDS.has(activeCommand)) return;
 
   // If the clicked argument is a directory, drill into it and re-render the picker
   if (value === '..') {

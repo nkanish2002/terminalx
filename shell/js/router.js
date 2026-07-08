@@ -76,13 +76,35 @@ export function initRouter() {
 }
 
 /**
+ * Commands whose first argument is a file/directory path
+ * that needs to be resolved against the current working directory
+ * before encoding into the hash for deep-linking.
+ */
+const PATH_COMMANDS = new Set(['open', 'cat', 'ls', 'cd', 'tree']);
+
+/**
  * Update hash for deep linking.
  * @param {string} cmdName - Command name
  * @param {string[]} args - Command arguments
+ * @param {string} currentDir - Current working directory
  */
-export function updateHash(cmdName, args) {
+export function updateHash(cmdName, args, currentDir) {
   if (cmdName && cmdName !== 'clear' && !hashChangePending) {
+    // Resolve relative path args so the hash is always an absolute path
+    const resolvedArgs = PATH_COMMANDS.has(cmdName) && args.length > 0
+      ? [resolveArgPath(args[0], currentDir), ...args.slice(1)]
+      : args;
     hashChangePending = true;
-    window.location.hash = `/${cmdName}/${args.join('/')}`;
+    window.location.hash = `/${cmdName}/${resolvedArgs.join('/')}`;
   }
+}
+
+/**
+ * Resolve a single argument path against currentDir.
+ * Absolute paths (starting with /) are returned as-is.
+ */
+function resolveArgPath(arg, currentDir) {
+  if (arg.startsWith('/')) return arg;
+  const base = currentDir === '/' ? '' : currentDir;
+  return `${base}/${arg}`;
 }
