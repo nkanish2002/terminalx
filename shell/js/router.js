@@ -50,8 +50,7 @@ function handleHash(hash) {
       errLine.className = 'output-line error';
       errLine.textContent = `command not found: ${cmd} ${args.join(' ')}`;
       output.appendChild(errLine);
-      const isNearBottom = output.scrollHeight - output.scrollTop - output.clientHeight < 100;
-      if (isNearBottom) {
+      if (window.getShouldAutoScroll && window.getShouldAutoScroll()) {
         output.scrollTop = output.scrollHeight;
       }
     }

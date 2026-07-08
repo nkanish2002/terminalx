@@ -204,9 +204,8 @@ export async function cmdSearch(args) {
     }
   }
 
-  // Scroll to show results (only if user was near the bottom)
-  const isNearBottom = output.scrollHeight - output.scrollTop - output.clientHeight < 100;
-  if (isNearBottom) {
+  // Scroll to show results (respect user scroll intent)
+  if (window.getShouldAutoScroll && window.getShouldAutoScroll()) {
     output.scrollTop = output.scrollHeight;
   }
 }
