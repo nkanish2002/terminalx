@@ -230,11 +230,16 @@ async function cmdLs(args) {
 
 async function cmdOpen(args) {
   if (!args[0]) {
-    addOutputLine('usage: open <file>', 'warning');
+    addOutputLine('usage: open <file> [@section]', 'warning');
     return;
   }
 
-  const target = resolvePath(args[0]);
+  const arg = args[0];
+  const atIndex = arg.lastIndexOf('@');
+  const filePath = atIndex >= 0 ? arg.slice(0, atIndex) : arg;
+  const sectionId = atIndex >= 0 ? arg.slice(atIndex + 1) : null;
+
+  const target = resolvePath(filePath);
   const node = manifest.tree[target];
 
   if (!node) {
@@ -269,12 +274,12 @@ async function cmdOpen(args) {
     }
   }
 
-  openFileModal(target, node, content);
+  openFileModal(target, node, content, sectionId);
 }
 
 // ── File Open Modal ──────────────────────────────────────────────────────
 
-function openFileModal(target, node, content) {
+function openFileModal(target, node, content, sectionId) {
   const overlay = document.getElementById('open-overlay');
   const titlePath = overlay.querySelector('.open-title-path');
   const body = overlay.querySelector('.open-body');
@@ -311,6 +316,18 @@ function openFileModal(target, node, content) {
   // Show overlay
   overlay.classList.remove('hidden');
   openModalActive = true;
+
+  // Scroll to section if specified
+  if (sectionId) {
+    requestAnimationFrame(() => {
+      const target = body.querySelector(`#${CSS.escape(sectionId)}`);
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        target.classList.add('search-target');
+        setTimeout(() => target.classList.remove('search-target'), 1500);
+      }
+    });
+  }
 
   // Initialize graphs after DOM update
   if (content.graphs && content.graphs.length > 0) {

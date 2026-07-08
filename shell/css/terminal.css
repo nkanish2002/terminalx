@@ -853,3 +853,53 @@ canvas {
     min-height: 44px;
   }
 }
+
+/* ── Search Results ─────────────────────────────────────────────────────── */
+
+.search-result {
+  padding: 4px 0;
+}
+
+.search-file-title {
+  color: var(--green);
+  font-weight: bold;
+  margin-right: 6px;
+}
+
+.search-file-path {
+  color: var(--cyan);
+  font-size: 0.9em;
+  opacity: 0.7;
+}
+
+.search-section {
+  padding: 2px 0 2px 16px;
+}
+
+.search-section-heading {
+  color: var(--yellow);
+  margin-right: 8px;
+}
+
+.search-section-snippet {
+  color: var(--dim);
+  font-size: 0.85em;
+  opacity: 0.7;
+}
+
+.search-highlight {
+  background: var(--yellow);
+  color: var(--bg);
+  padding: 0 2px;
+  border-radius: 2px;
+}
+
+/* Section target flash animation (when scrolled to from search) */
+@keyframes searchTargetFlash {
+  0% { background: var(--yellow); color: var(--bg); }
+  100% { background: transparent; }
+}
+
+.search-target {
+  animation: searchTargetFlash 1.5s ease-out;
+}
