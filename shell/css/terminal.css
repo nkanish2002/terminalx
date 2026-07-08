@@ -22,6 +22,7 @@
   --red: #e06c75;
   --purple: #c678dd;
   --white: #abb2bf;
+  --dim: #5a6370;
 
   --font-family: 'JetBrains Mono', monospace;
   --font-size: 14px;
@@ -51,12 +52,37 @@ body {
   -webkit-text-size-adjust: 100%;
 }
 
+/* ── Text selection ─────────────────────────────────────────────────── */
+
+::selection {
+  background: var(--green);
+  color: var(--bg);
+}
+
+::-moz-selection {
+  background: var(--green);
+  color: var(--bg);
+}
+
+/* ── Reduced motion ─────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .open-window {
+    animation: none;
+  }
+  .search-target {
+    animation: none;
+    background: var(--yellow) !important;
+    color: var(--bg) !important;
+  }
+}
+
 /* ── Terminal container ─────────────────────────────────────────────── */
 
 #terminal {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  height: 100dvh;
   padding: 8px;
 }
 
@@ -134,6 +160,8 @@ body {
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
   touch-action: pan-y;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) var(--bg);
 }
 
 #output::-webkit-scrollbar { width: 8px; }
@@ -229,6 +257,8 @@ canvas { max-width: 100%; height: auto; margin: 8px 0; }
   overflow-y: hidden;
   flex-shrink: 0;
   max-height: 60px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
 }
 
 .button-bar:first-child { border-top: 1px solid var(--border); }
@@ -290,9 +320,7 @@ canvas { max-width: 100%; height: auto; margin: 8px 0; }
   align-items: center;
   padding: 4px 8px;
   background-color: var(--surface);
-  border-left: 1px solid var(--border);
-  border-right: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: 0 0 4px 4px;
   min-height: var(--input-line-height);
   flex-shrink: 0;
@@ -322,6 +350,11 @@ canvas { max-width: 100%; height: auto; margin: 8px 0; }
   outline: none;
   caret-color: var(--green);
   min-width: 0;
+}
+
+#cmd-input::placeholder {
+  color: var(--dim);
+  opacity: 1;
 }
 
 /* ── Open Modal ────────────────────────────────────────────────────── */
@@ -420,6 +453,12 @@ canvas { max-width: 100%; height: auto; margin: 8px 0; }
 
 .open-close-icon:hover { opacity: 1; }
 
+.open-body::-webkit-scrollbar { width: 6px; height: 6px; }
+.open-body::-webkit-scrollbar-track { background: transparent; }
+.open-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+.open-body::-webkit-scrollbar-thumb:hover { background: var(--green); }
+.open-body::-webkit-scrollbar-corner { background: transparent; }
+
 .open-body {
   flex: 1;
   min-height: 0;
@@ -429,12 +468,9 @@ canvas { max-width: 100%; height: auto; margin: 8px 0; }
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
   touch-action: pan-y;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
 }
-
-.open-body::-webkit-scrollbar { width: 6px; height: 6px; }
-.open-body::-webkit-scrollbar-track { background: transparent; }
-.open-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-.open-body::-webkit-scrollbar-thumb:hover { background: var(--green); }
 
 /* Content inside open body */
 .open-body h1 {
