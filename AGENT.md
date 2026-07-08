@@ -160,7 +160,7 @@ The SPA (`shell/index.html` + `shell/js/`) runs entirely client-side after build
 - **Commands:** `ls`, `open`, `cd`, `pwd`, `tree`, `clear`, `help`, `whoami`, `date`, `search` — gated by `config.commands.enabled`
 - **`open` flow:** resolve path → check cache → if not inlined, `fetch` per-file JSON → open scrollable modal overlay with file content → init graphs if present
 - **Modal:** `#open-overlay` is a fixed-position overlay with its own scrollable body. Desktop: 720px centered island. Mobile: full-screen. Close via ESC, backdrop tap, or titlebar buttons.
-- **Routing:** hash-based (`#/open/docs/readme.md`). On load with no hash → run `config.content.landing` command
+- **Routing:** hash-based three-section format (`#/path|cmd|args`). Path is always present (current working directory). Cmd and args are included only when the modal is open. On load with no hash → run `config.content.landing`. On load with path-only hash → cd to path + run landing.
 - **Tab completion:** commands + file paths from tree
 - **Command bar + argument picker:** optional button layer above input line. Command bar shows pill buttons for all enabled commands. Clicking a command inserts it into the input and (for commands that take arguments) shows contextual path suggestions from the file tree. Zero-arg commands (`clear`, `pwd`, `whoami`, `date`, `help`) auto-execute on click. Controlled by `config.ui.commandBar`. Manual typing hides the picker. Toggle with `Ctrl+B`.
 - **History:** ↑/↓ arrows
@@ -210,7 +210,7 @@ When making changes, verify:
 - [ ] Scrolling up in `#output` pauses auto-scroll; scrolling back to bottom resumes it
 - [ ] `ls` shows directory tree, `cd` navigates, `open` renders Markdown in modal
 - [ ] `search <query>` returns results with snippets, clicking results opens files
-- [ ] Hash routing: `#/open/docs/readme.md` loads content directly in modal
+- [ ] Hash routing: `#/docs|open|/docs/readme.md` loads content directly in modal
 - [ ] Graph rendering: `open /projects/portfolio/overview.md` shows charts in modal
 - [ ] Modal closes on ESC, backdrop click, or titlebar buttons
 - [ ] Tab completion works for commands and paths
@@ -223,6 +223,14 @@ When making changes, verify:
 - [ ] `ui.commandBar.alwaysVisible: false` hides bar until input focused
 
 ## Changelog / Resolved Issues
+
+### 2026-07-08 — Hash URL: three-section format (path|cmd|args)
+- **Hash URLs were ambiguous** (`shell/js/router.js`): Old format `#/cmd/path/arg` split on `/` which conflicted with path segments (e.g. `#/open/docs/readme.md` was indistinguishable from path `/open/docs/readme.md`). New format `#/path|cmd|args` uses `|` as section delimiter.
+- **Hash sections reflect visible state** (`shell/js/router.js`, `shell/js/app.js`): Path section is always present (current working directory). Cmd and args sections appear only when the modal is open. Non-modal commands (`cd`, `ls`, `clear`, etc.) update only the path. Modal commands (`open`, `cat`) write all three sections.
+- **cd preserves modal context** (`shell/js/router.js`): When the modal is open and `cd` runs, the hash updates the path portion while preserving the existing `cmd|args` from the current hash. Closing the modal reverts to path-only format.
+- **Path-only hash triggers landing** (`shell/js/router.js`): `#/docs` (no cmd/args) navigates to `/docs` then runs the landing command. No hash (`#/` or empty) runs landing at root. Both behaviors match the original intent.
+- **openFileModal/closeFileModal manage hash** (`shell/js/app.js`): `executeCommand` skips `updateHash` for modal commands (`open`, `cat`). Instead, `openFileModal` calls `updateHash('open', [path], currentDir)` after showing the overlay, and `closeFileModal` calls `updateHash(null, [], currentDir)` after hiding it.
+- **Section anchor preserved** (`shell/js/app.js`): When opening a file with a section anchor (`open /path/file.md@section`), the `@section` is included in the args portion of the hash, so the deep link scrolls to the correct section.
 
 ### 2026-07-08 — Styling audit: light mode, Firefox, accessibility, Prism fixes
 - **`--dim` CSS variable undefined** (`shell/css/terminal.css`): `.search-section-snippet` used `color: var(--dim)` but it was never defined. Search snippet text rendered invisible. Added `--dim: #5a6370` to both `:root` defaults and theme generator.

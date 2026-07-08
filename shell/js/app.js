@@ -173,7 +173,13 @@ function executeCommand(input) {
     } else {
       addOutputLine(`command not found: ${cmdName}`, 'error');
     }
-    updateHash(cmdName, args, currentDir);
+    // Update hash for non-modal commands only.
+    // Modal commands (open/cat) manage the hash themselves via updateHash
+    // in openFileModal/closeFileModal, so we skip it here to avoid
+    // writing a stale path-only hash before the modal opens.
+    if (!new Set(['open', 'cat']).has(cmdName)) {
+      updateHash(cmdName, args, currentDir);
+    }
     resetBars();
     // Refresh picker if active (e.g. after cd changes currentDir)
     if (window.updateArgumentPicker) window.updateArgumentPicker();
@@ -325,6 +331,10 @@ function openFileModal(target, node, content, sectionId) {
   overlay.classList.remove('hidden');
   openModalActive = true;
 
+  // Update hash to three-section format: #path|cmd|args
+  const argsStr = sectionId ? `${target}@${sectionId}` : target;
+  updateHash('open', [argsStr], currentDir);
+
   // Scroll to section if specified
   if (sectionId) {
     requestAnimationFrame(() => {
@@ -361,6 +371,9 @@ function closeFileModal() {
   overlay.classList.add('hidden');
   overlay.querySelector('.open-body').innerHTML = '';
   openModalActive = false;
+
+  // Update hash to path-only format (modal is closed)
+  updateHash(null, [], currentDir);
 }
 
 function cmdCd(args) {
