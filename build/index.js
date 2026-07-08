@@ -42,8 +42,8 @@ async function build() {
   for (const file of files) {
     if (file.ext === '.md') {
       const rawContent = readFileSync(file.fullPath, 'utf-8');
-      const { html, title, graphs, raw } = await renderMarkdown(rawContent, file.title);
-      contentMap[file.path] = { html, title, graphs, raw };
+      const { html, title, graphs, raw, sections } = await renderMarkdown(rawContent, file.title);
+      contentMap[file.path] = { html, title, graphs, raw, sections };
     } else {
       // Non-markdown files (e.g., .json) — store raw
       const raw = readFileSync(file.fullPath, 'utf-8');
@@ -106,7 +106,7 @@ async function build() {
     }
   }
   
-  // Generate search-index.json (use stripped HTML for readable snippets)
+  // Generate search-index.json with sections for each file
   const searchIndex = files
     .filter(f => f.ext === '.md')
     .map(f => {
@@ -124,6 +124,7 @@ async function build() {
         path: f.path,
         title: content?.title || f.title,
         text: text,
+        sections: content?.sections || [],
       };
     });
   

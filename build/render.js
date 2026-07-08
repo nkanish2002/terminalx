@@ -115,15 +115,22 @@ export async function renderMarkdown(rawContent, title) {
   
   // Render markdown to HTML
   let html = md.render(cleanedContent);
-  
+
   // Post-process: Convert @@GRAPH:id@@ tokens to <canvas> elements
   html = convertGraphTokens(html);
-  
+
+  // Post-process: Add id attributes to headings for anchor targeting
+  html = addHeadingIds(html);
+
+  // Extract sections for search index
+  const sections = extractSections(html);
+
   return {
     html,
     title: finalTitle,
     graphs,
     raw: content,
+    sections,
   };
 }
 
@@ -144,6 +151,68 @@ function convertGraphTokens(html) {
 function extractH1(content) {
   const match = content.match(/^#\s+(.+)$/m);
   return match ? match[1].trim() : null;
+}
+
+/**
+ * Slugify heading text for use as an HTML id.
+ */
+function slugifyHeading(text) {
+  return text
+    .toLowerCase()
+    .replace(/<[^>]*>/g, '')       // strip any tags
+    .replace(/[^a-z0-9\s-]/g, '')  // remove punctuation
+    .replace(/\s+/g, '-')          // spaces to hyphens
+    .replace(/-+/g, '-')           // collapse hyphens
+    .replace(/^-|-$/g, '');        // trim leading/trailing hyphens
+}
+
+/**
+ * Add id="slug" attributes to heading tags in HTML so sections are anchor-targetable.
+ */
+function addHeadingIds(html) {
+  return html.replace(/<(h[1-6])([^>]*)>([^<]+)<\/h[1-6]>/g, (match, tag, attrs, text) => {
+    if (attrs.includes(' id=')) return match; // already has an id
+    const slug = slugifyHeading(text.trim());
+    if (!slug) return match;
+    return `<${tag}${attrs} id="${slug}">${text}</${tag}>`;
+  });
+}
+
+/**
+ * Extract sections from rendered HTML. Each section has a heading, an id, and content.
+ * Returns an array of { id, heading, text } (text stripped of HTML tags).
+ */
+function extractSections(html) {
+  const sections = [];
+  const headingRegex = /<(h[1-6])[^>]*>([^<]+)<\/h[1-6]>/g;
+  const tagRegex = /<[^>]*>/g;
+
+  let matches = [];
+  let m;
+  while ((m = headingRegex.exec(html)) !== null) {
+    matches.push({
+      level: parseInt(m[1].charAt(1), 10),
+      text: m[2].trim(),
+      pos: m.index,
+    });
+  }
+
+  if (matches.length === 0) return sections;
+
+  let content = '';
+  let i = 0;
+  for (const heading of matches) {
+    const slug = slugifyHeading(heading.text);
+    sections.push({
+      id: slug || `section-${i}`,
+      heading: heading.text,
+      text: content.replace(tagRegex, ' ').replace(/\s+/g, ' ').trim(),
+    });
+    content = html.slice(heading.pos, i + 1 < matches.length ? matches[i + 1].pos : html.length);
+    i++;
+  }
+
+  return sections;
 }
 
 export default renderMarkdown;
