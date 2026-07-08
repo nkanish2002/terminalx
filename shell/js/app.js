@@ -85,6 +85,7 @@ async function init() {
     window.addOutputLine = addOutputLine;
     window.escapeHtml = escapeHtml;
     window.activeCharts = activeCharts;
+    window.getShouldAutoScroll = () => shouldAutoScroll;
     
     // Initialize router (handles initial hash + hashchange + landing)
     initRouter();
@@ -113,6 +114,7 @@ function initCommands() {
     tree: (args) => cmdTree(args),
     clear: () => {
       document.getElementById('output').innerHTML = '';
+      shouldAutoScroll = true;
     },
     help: () => {
       addOutputLine('Available commands:');
@@ -179,6 +181,8 @@ function executeCommand(input) {
 }
 
 // ── Output & Prompt ───────────────────────────────────────────────────────
+let shouldAutoScroll = true;
+
 function addOutputLine(text, className = '') {
   const output = document.getElementById('output');
   const line = document.createElement('div');
@@ -186,10 +190,7 @@ function addOutputLine(text, className = '') {
   line.innerHTML = text;
   output.appendChild(line);
 
-  // Auto-scroll only if the user is already near the bottom (within 100px)
-  // This lets users scroll up to review earlier output without being yanked back
-  const isNearBottom = output.scrollHeight - output.scrollTop - output.clientHeight < 100;
-  if (isNearBottom) {
+  if (shouldAutoScroll) {
     output.scrollTop = output.scrollHeight;
   }
 }
@@ -487,6 +488,15 @@ function completePath(parts, last) {
 document.addEventListener('DOMContentLoaded', () => {
   const input = document.getElementById('cmd-input');
   inputRef = input;
+
+  // Track whether the user has intentionally scrolled up.
+  // Auto-scroll is on by default; turns off when user scrolls up,
+  // turns back on when they scroll to the bottom.
+  const output = document.getElementById('output');
+  output.addEventListener('scroll', () => {
+    const isAtBottom = output.scrollHeight - output.scrollTop - output.clientHeight < 50;
+    shouldAutoScroll = isAtBottom;
+  });
   
   input.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
