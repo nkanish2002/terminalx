@@ -197,7 +197,8 @@ function addOutputLine(text, className = '') {
 
 function getPrompt() {
   const { user, host, promptSymbol } = manifest.config.site;
-  return `<span class="user">${user}</span><span class="host">@${host}</span><span class="symbol">${promptSymbol}</span>`;
+  const dirDisplay = currentDir === '/' ? '/' : currentDir;
+  return `<span class="user">${user}</span><span class="host">@${host}</span> <span class="path">${dirDisplay}</span> <span class="symbol">${promptSymbol}</span>`;
 }
 
 function updatePrompt() {
@@ -384,6 +385,7 @@ function cmdCd(args) {
   
   const titlebarEl = document.getElementById('titlebar-path');
   if (titlebarEl) titlebarEl.textContent = currentDir;
+  updatePrompt();
 }
 
 function cmdTree(args) {
