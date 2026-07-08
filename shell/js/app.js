@@ -390,23 +390,48 @@ function cmdCd(args) {
 
 function cmdTree(args) {
   const target = args[0] ? resolvePath(args[0]) : currentDir;
-  renderTree(target, 0);
+  const node = manifest.tree[target];
+  if (!node || node.type !== 'dir') {
+    addOutputLine(`Not a directory: ${target}`, 'error');
+    return;
+  }
+  renderTreeTarget(target);
 }
 
-function renderTree(path, depth) {
-  const node = manifest.tree[path];
-  if (!node) return;
-  
-  const indent = '  '.repeat(depth);
-  const icon = node.type === 'dir' ? '├── ' : '└── ';
-  const name = path.split('/').pop() || '/';
-  addOutputLine(`${indent}${depth === 0 ? '📂' : icon}${name}${node.type === 'dir' ? '/' : ''}`);
-  
-  if (node.type === 'dir' && node.children) {
-    for (let i = 0; i < node.children.length; i++) {
-      const child = node.children[i];
-      const childPath = path === '/' ? `/${child}` : `${path}/${child}`;
-      renderTree(childPath, depth + 1);
+/** Render the root node and recurse with prefix tracking. */
+function renderTreeTarget(rootPath) {
+  const node = manifest.tree[rootPath];
+  const name = rootPath === '/' ? '/' : rootPath.split('/').pop();
+  addOutputLine(`📂 ${name}${node.type === 'dir' ? '/' : ''}`);
+  if (node.children) {
+    renderChildren(node.children, rootPath, '');
+  }
+}
+
+/**
+ * Recursively render children of a directory.
+ * @param {string[]} children  - child names
+ * @param {string}  parentPath - parent directory path
+ * @param {string}  prefix     - accumulated prefix string (│/space chain)
+ */
+function renderChildren(children, parentPath, prefix) {
+  for (let i = 0; i < children.length; i++) {
+    const child = children[i];
+    const isLast = i === children.length - 1;
+    const connector = isLast ? '└── ' : '├── ';
+    const childPath = parentPath === '/' ? `/${child}` : `${parentPath}/${child}`;
+    const childNode = manifest.tree[childPath];
+
+    if (childNode) {
+      const name = child.split('/').pop() || child;
+      addOutputLine(`${prefix}${connector}${name}${childNode.type === 'dir' ? '/' : ''}`);
+    }
+
+    // Recurse into sub-directories
+    if (childNode && childNode.type === 'dir' && childNode.children) {
+      const childPathForRecurse = parentPath === '/' ? `/${child}` : `${parentPath}/${child}`;
+      const newPrefix = prefix + (isLast ? '    ' : '│   ');
+      renderChildren(childNode.children, childPathForRecurse, newPrefix);
     }
   }
 }
